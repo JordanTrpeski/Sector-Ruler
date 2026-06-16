@@ -59,18 +59,19 @@
 						<do_if value="$trade_rank ge 20"><set_value name="$scavenger_rank_bonus" operation="add" exact="1"/></do_if>
 						<do_if value="$trade_rank ge 25"><set_value name="$scavenger_rank_bonus" operation="add" exact="1"/></do_if>
 						<do_if value="$trade_rank ge 30"><set_value name="$scavenger_rank_bonus" operation="add" exact="1"/></do_if>
+					<set_value name="$war_rank_bonus" exact="$fight_rank"/>
 
-						<set_value name="$supplied_military_actual" exact="180 + $fight_rank"/>
-						<do_if value="$sector_count == 1"><set_value name="$supplied_military_actual" exact="230 + $fight_rank"/></do_if>
-						<do_elseif value="$sector_count == 2"><set_value name="$supplied_military_actual" exact="290 + $fight_rank"/></do_elseif>
-						<do_elseif value="$sector_count == 3"><set_value name="$supplied_military_actual" exact="365 + $fight_rank"/></do_elseif>
-						<do_elseif value="$sector_count == 4"><set_value name="$supplied_military_actual" exact="455 + $fight_rank"/></do_elseif>
-						<do_elseif value="$sector_count == 5"><set_value name="$supplied_military_actual" exact="555 + $fight_rank"/></do_elseif>
-						<do_elseif value="$sector_count == 6"><set_value name="$supplied_military_actual" exact="640 + $fight_rank"/></do_elseif>
-						<do_elseif value="$sector_count == 7"><set_value name="$supplied_military_actual" exact="715 + $fight_rank"/></do_elseif>
-						<do_elseif value="$sector_count == 8"><set_value name="$supplied_military_actual" exact="780 + $fight_rank"/></do_elseif>
-						<do_elseif value="$sector_count == 9"><set_value name="$supplied_military_actual" exact="840 + $fight_rank"/></do_elseif>
-						<do_elseif value="$sector_count gt 9"><set_value name="$supplied_military_actual" exact="840 + (($sector_count - 9) * 50) + $fight_rank"/></do_elseif>
+						<set_value name="$supplied_military_actual" exact="180 + ($fight_rank * 2)"/>
+						<do_if value="$sector_count == 1"><set_value name="$supplied_military_actual" exact="230 + ($fight_rank * 2)"/></do_if>
+						<do_elseif value="$sector_count == 2"><set_value name="$supplied_military_actual" exact="290 + ($fight_rank * 2)"/></do_elseif>
+						<do_elseif value="$sector_count == 3"><set_value name="$supplied_military_actual" exact="365 + ($fight_rank * 2)"/></do_elseif>
+						<do_elseif value="$sector_count == 4"><set_value name="$supplied_military_actual" exact="455 + ($fight_rank * 2)"/></do_elseif>
+						<do_elseif value="$sector_count == 5"><set_value name="$supplied_military_actual" exact="555 + ($fight_rank * 2)"/></do_elseif>
+						<do_elseif value="$sector_count == 6"><set_value name="$supplied_military_actual" exact="640 + ($fight_rank * 2)"/></do_elseif>
+						<do_elseif value="$sector_count == 7"><set_value name="$supplied_military_actual" exact="715 + ($fight_rank * 2)"/></do_elseif>
+						<do_elseif value="$sector_count == 8"><set_value name="$supplied_military_actual" exact="780 + ($fight_rank * 2)"/></do_elseif>
+						<do_elseif value="$sector_count == 9"><set_value name="$supplied_military_actual" exact="840 + ($fight_rank * 2)"/></do_elseif>
+						<do_elseif value="$sector_count gt 9"><set_value name="$supplied_military_actual" exact="840 + (($sector_count - 9) * 50) + ($fight_rank * 2)"/></do_elseif>
 
 						<set_value name="$supplied_miners_actual" exact="120 + $trade_rank"/>
 						<do_if value="$sector_count == 1"><set_value name="$supplied_miners_actual" exact="154 + $trade_rank"/></do_if>
@@ -101,17 +102,18 @@
 						<set_value name="$supplied_defence_modules_actual" exact="(md.anghelos_sector_ruler_config.anghelos_config.$anghelos_supplied_defence * $sector_count)+ md.anghelos_sector_ruler_config.anghelos_config.$anghelos_supplied_defenceS + $defence_rank_bonus"/>
 						<set_value name="$supplied_build_modules_actual" exact="(md.anghelos_sector_ruler_config.anghelos_config.$anghelos_supplied_building * $sector_count) + md.anghelos_sector_ruler_config.anghelos_config.$anghelos_supplied_buildingS"/>
 
-						<set_value name="$war_threshold_actual" exact="150"/>
-						<do_if value="$sector_count == 1"><set_value name="$war_threshold_actual" exact="185"/></do_if>
-						<do_elseif value="$sector_count == 2"><set_value name="$war_threshold_actual" exact="220"/></do_elseif>
-						<do_elseif value="$sector_count == 3"><set_value name="$war_threshold_actual" exact="262"/></do_elseif>
-						<do_elseif value="$sector_count == 4"><set_value name="$war_threshold_actual" exact="304"/></do_elseif>
-						<do_elseif value="$sector_count == 5"><set_value name="$war_threshold_actual" exact="353"/></do_elseif>
-						<do_elseif value="$sector_count == 6"><set_value name="$war_threshold_actual" exact="388"/></do_elseif>
-						<do_elseif value="$sector_count == 7"><set_value name="$war_threshold_actual" exact="416"/></do_elseif>
-						<do_elseif value="$sector_count == 8"><set_value name="$war_threshold_actual" exact="437"/></do_elseif>
-						<do_elseif value="$sector_count == 9"><set_value name="$war_threshold_actual" exact="451"/></do_elseif>
-						<do_elseif value="$sector_count gt 9"><set_value name="$war_threshold_actual" exact="451"/></do_elseif>
+						<set_value name="$war_threshold_actual" exact="140"/>
+						<do_if value="$sector_count == 1"><set_value name="$war_threshold_actual" exact="175"/></do_if>
+						<do_elseif value="$sector_count == 2"><set_value name="$war_threshold_actual" exact="210"/></do_elseif>
+						<do_elseif value="$sector_count == 3"><set_value name="$war_threshold_actual" exact="252"/></do_elseif>
+						<do_elseif value="$sector_count == 4"><set_value name="$war_threshold_actual" exact="294"/></do_elseif>
+						<do_elseif value="$sector_count == 5"><set_value name="$war_threshold_actual" exact="343"/></do_elseif>
+						<do_elseif value="$sector_count == 6"><set_value name="$war_threshold_actual" exact="378"/></do_elseif>
+						<do_elseif value="$sector_count == 7"><set_value name="$war_threshold_actual" exact="406"/></do_elseif>
+						<do_elseif value="$sector_count == 8"><set_value name="$war_threshold_actual" exact="427"/></do_elseif>
+						<do_elseif value="$sector_count == 9"><set_value name="$war_threshold_actual" exact="440"/></do_elseif>
+						<do_elseif value="$sector_count gt 9"><set_value name="$war_threshold_actual" exact="440"/></do_elseif>
+						<set_value name="$war_threshold_actual" operation="add" exact="$war_rank_bonus"/>
 						<!--Military count-->
 						<find_ship_by_true_owner name="$XLShipss" multiple="true" checkoperational="true" masstraffic="false" unit="false" class="class.ship_xl" primarypurpose="purpose.fight" space="player.galaxy" faction="faction.player" recursive="true"/>
 						<find_ship_by_true_owner name="$XLDockedShipss" multiple="true" checkoperational="true" masstraffic="false" unit="false" class="class.ship_xl" primarypurpose="purpose.fight" space="player.galaxy" faction="faction.player" docked="true" recursive="true"/>
@@ -303,6 +305,7 @@
 						<remove_value name="$defence_rank_bonus"/>
 						<remove_value name="$utility_rank_bonus"/>
 						<remove_value name="$scavenger_rank_bonus"/>
+						<remove_value name="$war_rank_bonus"/>
 						<remove_value name="$ticker_message"/>
 				</actions>
 			</cue>        

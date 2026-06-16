@@ -13,8 +13,8 @@ The balance focus is to make expansion feel more staged:
 - Early game starts slightly tighter for economy fleets.
 - Mid-game sector ownership gives stronger gains.
 - Late-game gains slow down, so the player still needs to manage overexpansion.
-- At more than 9 sectors, the original crisis concept remains the diplomatic end state, but supply values continue to increase so very large empires still have defined logistics limits.
-- Fight Rank and Trade Rank provide small prestige bonuses to supply limits.
+- At more than 9 sectors, the original sector-crisis cap still triggers the Galactic Crisis / point-of-no-return logic. Normal war-threshold balancing is superseded by crisis behaviour, but supply values continue to increase so very large empires still have defined logistics limits.
+- Fight Rank and Trade Rank provide small prestige bonuses to supply limits. Fight Rank also provides a command-prestige bonus to the military war threshold.
 
 ## Organisation stages used for balancing
 
@@ -51,7 +51,7 @@ The original Sector Ruler supply weights are preserved:
 
 ## Military supply
 
-Fight Rank is added as a small prestige bonus. X4 exposes named Fight/Trade ranks as 31 displayed tiers; internally these are expected to be 0-30, so max rank adds +30 military supply.
+Fight Rank is added as a prestige bonus. X4 exposes named Fight/Trade ranks as 31 displayed tiers; internally these are expected to be 0-30, so max rank adds +60 military supply.
 
 | Sectors | Base military supply |
 |---:|---:|
@@ -70,26 +70,40 @@ Fight Rank is added as a small prestige bonus. X4 exposes named Fight/Trade rank
 Final formula:
 
 ```text
-Military supply = military sector curve + fight_rank
+Military supply = military sector curve + (fight_rank * 2)
 ```
 
 ## Military threat war threshold
 
-The war threshold is now a staged alarm curve. It is intentionally lower than the military supply cap, because the great powers can tolerate a state navy but still become alarmed by an oversized military.
+The war threshold is now a staged alarm curve. It is intentionally lower than the military supply cap, because the great powers can tolerate a state navy but still become alarmed by an oversized military. Fight Rank adds a command-prestige bonus to the threshold: `fight_rank`, up to +30 at max internal rank.
 
-| Sectors | War threshold |
+At 10+ owned sectors, the normal military alarm threshold is no longer the main limiter. The original Sector Ruler sector-crisis cap still applies: exceeding the crisis sector threshold triggers the Galactic Crisis / point-of-no-return logic regardless of the normal war-threshold value.
+
+| Sectors | Base war threshold before Fight Rank bonus |
 |---:|---:|
-| 0 | 150 |
-| 1 | 185 |
-| 2 | 220 |
-| 3 | 262 |
-| 4 | 304 |
-| 5 | 353 |
-| 6 | 388 |
-| 7 | 416 |
-| 8 | 437 |
-| 9 | 451 |
-| 10+ | Crisis state; threshold is not the meaningful limiter |
+| 0 | 140 |
+| 1 | 175 |
+| 2 | 210 |
+| 3 | 252 |
+| 4 | 294 |
+| 5 | 343 |
+| 6 | 378 |
+| 7 | 406 |
+| 8 | 427 |
+| 9 | 440 |
+| 10+ | Galactic Crisis logic takes over |
+
+Final formula before crisis:
+
+```text
+War threshold = base war threshold + fight_rank
+```
+
+Crisis rule:
+
+```text
+If owned sectors exceed the crisis sector cap, Galactic Crisis / point-of-no-return logic triggers regardless of the normal war threshold.
+```
 
 ## Mining supply
 
