@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<content id="ws_4747474711" name="Sector Ruler - Balanced Curves" author="Anghelos92" version="100" date="2024-03-04" save="false" enabled="1" description="Balanced edit of Sector Ruler. Adds curved sector-based supply progression for military, mining and trading fleets; small Fight/Trade Rank prestige bonuses; staged military war threshold; and continued post-crisis supply growth. Sector ownership remains vital for empire scale. " sync="false" lastupdate="1657873359">
+  <dependency version="600"/>
+  <dependency id="ego_dlc_split" version="100" name="Split Vendetta"/>
+  <dependency id="ego_dlc_terran" version="100" name="Cradle of Humanity"/>
+  <dependency id="ego_dlc_pirate" version="100" name="Tides of Avarice"/>
+  <dependency id="ego_dlc_boron" version="100" name="Kingdom End"/>
+  <dependency id="ws_2042901274" optional="false" name="SirNukes Mod Support APIs"/>
+</content>

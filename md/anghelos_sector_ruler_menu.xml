@@ -1,0 +1,838 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<mdscript name="anghelos_sector_ruler_menu"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="md.xsd">
+  <cues>
+    <cue name="anghelos_invoke_sma" instantiate="true" namespace="this">
+		<conditions>
+			<event_cue_signalled cue="md.Simple_Menu_API.Reloaded"/>
+		</conditions>
+		<actions>
+			<signal_cue_instantly cue="md.Simple_Menu_API.Register_Options_Menu" param="table[
+			$id='anghelos_main_menu',
+			$title={104710471,1000},
+			$onOpen=anghelos_submenu,
+			$columns=1]"/>
+			<signal_cue_instantly cue="md.Simple_Menu_API.Register_Options_Menu" param="table[
+			$id='anghelos_info_menu',
+			$title={104710471,1030},
+			$onOpen=anghelos_build_info_menu,
+			$private = 1,
+			$columns=8]"/>
+			<signal_cue_instantly cue="md.Simple_Menu_API.Register_Options_Menu" param="table[
+			$id='anghelos_options_menu',
+			$title={104710471,1040},
+			$onOpen=anghelos_build_options_menu,
+			$private = 1,
+			$columns=3]"/>
+			<signal_cue_instantly cue="md.Simple_Menu_API.Register_Options_Menu" param="table[
+			$id='anghelos_guide_menu',
+			$title={104710471,1050},
+			$onOpen=anghelos_build_guide_menu,
+			$private = 1,
+			$columns=1]"/>
+		</actions>
+    </cue>
+	<cue name="anghelos_submenu" instantiate="true" namespace="this">
+		<conditions>
+			<event_cue_signalled/>
+		</conditions>
+		<actions>
+			<signal_cue_instantly cue="md.Simple_Menu_API.Add_Submenu_Link" param="table[$text={104710471,1030}, $id='anghelos_info_menu']"/>
+			<signal_cue_instantly cue="md.Simple_Menu_API.Add_Submenu_Link" param="table[$text={104710471,1040}, $id='anghelos_options_menu']"/>
+			<signal_cue_instantly cue="md.Simple_Menu_API.Add_Submenu_Link" param="table[$text={104710471,1050}, $id='anghelos_guide_menu']"/>
+		</actions>
+    </cue>
+	<!--Info menu-->
+	<cue name="anghelos_build_info_menu" instantiate="true" namespace="this">
+      <conditions>
+        <event_cue_signalled/>
+      </conditions>
+      <actions>
+		<!--DATA GATHERING-->
+		<find_sector name="$sectors_player" owner="faction.player" multiple="true"/>
+		<set_value name="$sector_tax_total" exact="(0)ct"/>
+		<set_value name="$workforce_tax_total" exact="(0)ct"/>
+		<set_value name="$workforce_total" exact="0"/>
+		<set_value name="$workforce_tax__welfare_total" exact="(0)ct"/>
+		<set_value name="$workforce_welfare_total" exact="0"/>
+		<set_value name="$build_modules_player" exact="[]"/>
+		<set_value name="$defence_modules_player" exact="[]"/>
+		<do_if value="$sectors_player.count">
+			<set_value name="$sector_tax_total" exact="(($sectors_player.count * md.anghelos_sector_ruler_config.anghelos_config.$anghelos_sector_income)*100)ct "/>
+			<do_all exact="$sectors_player.count" counter="$i">
+				<set_value name="$sector" exact="$sectors_player.{$i}"/>
+				<find_station_by_true_owner name="$stations_player" recursive="true" multiple="true" space="$sector" faction="faction.player" known="true"/>
+				<do_if value="$stations_player.count">
+					<do_all exact="$stations_player.count" counter="$i">
+						<set_value name="$stations" exact="$stations_player.{$i}"/>
+						<set_value name="$workforce_tax_total" operation="add" exact="(($stations.workforce.amount * md.anghelos_sector_ruler_config.anghelos_config.$anghelos_workforce_income)*100)ct "/>
+						<set_value name="$workforce_total" operation="add" exact="$stations.workforce.amount"/>	
+					</do_all>
+				</do_if>
+			</do_all>
+		</do_if>
+		<!--Sector Supply: balanced curved progression and prestige bonuses-->
+		<set_value name="$sector_count" exact="([$sectors_player.count,0].max)"/>
+		<set_value name="$fight_rank" exact="([stat.fight_rank,0].max)"/>
+		<set_value name="$trade_rank" exact="([stat.trade_rank,0].max)"/>
+		<set_value name="$defence_rank_bonus" exact="0"/>
+		<do_if value="$fight_rank ge 3"><set_value name="$defence_rank_bonus" operation="add" exact="1"/></do_if>
+		<do_if value="$fight_rank ge 6"><set_value name="$defence_rank_bonus" operation="add" exact="1"/></do_if>
+		<do_if value="$fight_rank ge 9"><set_value name="$defence_rank_bonus" operation="add" exact="1"/></do_if>
+		<do_if value="$fight_rank ge 12"><set_value name="$defence_rank_bonus" operation="add" exact="1"/></do_if>
+		<do_if value="$fight_rank ge 15"><set_value name="$defence_rank_bonus" operation="add" exact="1"/></do_if>
+		<do_if value="$fight_rank ge 18"><set_value name="$defence_rank_bonus" operation="add" exact="1"/></do_if>
+		<do_if value="$fight_rank ge 21"><set_value name="$defence_rank_bonus" operation="add" exact="1"/></do_if>
+		<do_if value="$fight_rank ge 24"><set_value name="$defence_rank_bonus" operation="add" exact="1"/></do_if>
+		<do_if value="$fight_rank ge 27"><set_value name="$defence_rank_bonus" operation="add" exact="1"/></do_if>
+		<do_if value="$fight_rank ge 30"><set_value name="$defence_rank_bonus" operation="add" exact="1"/></do_if>
+		<set_value name="$utility_rank_bonus" exact="0"/>
+		<do_if value="($trade_rank + $fight_rank) ge 10"><set_value name="$utility_rank_bonus" operation="add" exact="1"/></do_if>
+		<do_if value="($trade_rank + $fight_rank) ge 20"><set_value name="$utility_rank_bonus" operation="add" exact="1"/></do_if>
+		<do_if value="($trade_rank + $fight_rank) ge 30"><set_value name="$utility_rank_bonus" operation="add" exact="1"/></do_if>
+		<do_if value="($trade_rank + $fight_rank) ge 40"><set_value name="$utility_rank_bonus" operation="add" exact="1"/></do_if>
+		<do_if value="($trade_rank + $fight_rank) ge 50"><set_value name="$utility_rank_bonus" operation="add" exact="1"/></do_if>
+		<do_if value="($trade_rank + $fight_rank) ge 60"><set_value name="$utility_rank_bonus" operation="add" exact="1"/></do_if>
+		<set_value name="$scavenger_rank_bonus" exact="0"/>
+		<do_if value="$trade_rank ge 5"><set_value name="$scavenger_rank_bonus" operation="add" exact="1"/></do_if>
+		<do_if value="$trade_rank ge 10"><set_value name="$scavenger_rank_bonus" operation="add" exact="1"/></do_if>
+		<do_if value="$trade_rank ge 15"><set_value name="$scavenger_rank_bonus" operation="add" exact="1"/></do_if>
+		<do_if value="$trade_rank ge 20"><set_value name="$scavenger_rank_bonus" operation="add" exact="1"/></do_if>
+		<do_if value="$trade_rank ge 25"><set_value name="$scavenger_rank_bonus" operation="add" exact="1"/></do_if>
+		<do_if value="$trade_rank ge 30"><set_value name="$scavenger_rank_bonus" operation="add" exact="1"/></do_if>
+
+		<set_value name="$supplied_military_actual" exact="180 + $fight_rank"/>
+		<do_if value="$sector_count == 1"><set_value name="$supplied_military_actual" exact="230 + $fight_rank"/></do_if>
+		<do_elseif value="$sector_count == 2"><set_value name="$supplied_military_actual" exact="290 + $fight_rank"/></do_elseif>
+		<do_elseif value="$sector_count == 3"><set_value name="$supplied_military_actual" exact="365 + $fight_rank"/></do_elseif>
+		<do_elseif value="$sector_count == 4"><set_value name="$supplied_military_actual" exact="455 + $fight_rank"/></do_elseif>
+		<do_elseif value="$sector_count == 5"><set_value name="$supplied_military_actual" exact="555 + $fight_rank"/></do_elseif>
+		<do_elseif value="$sector_count == 6"><set_value name="$supplied_military_actual" exact="640 + $fight_rank"/></do_elseif>
+		<do_elseif value="$sector_count == 7"><set_value name="$supplied_military_actual" exact="715 + $fight_rank"/></do_elseif>
+		<do_elseif value="$sector_count == 8"><set_value name="$supplied_military_actual" exact="780 + $fight_rank"/></do_elseif>
+		<do_elseif value="$sector_count == 9"><set_value name="$supplied_military_actual" exact="840 + $fight_rank"/></do_elseif>
+		<do_elseif value="$sector_count gt 9"><set_value name="$supplied_military_actual" exact="840 + (($sector_count - 9) * 50) + $fight_rank"/></do_elseif>
+
+		<set_value name="$supplied_miners_actual" exact="120 + $trade_rank"/>
+		<do_if value="$sector_count == 1"><set_value name="$supplied_miners_actual" exact="154 + $trade_rank"/></do_if>
+		<do_elseif value="$sector_count == 2"><set_value name="$supplied_miners_actual" exact="196 + $trade_rank"/></do_elseif>
+		<do_elseif value="$sector_count == 3"><set_value name="$supplied_miners_actual" exact="250 + $trade_rank"/></do_elseif>
+		<do_elseif value="$sector_count == 4"><set_value name="$supplied_miners_actual" exact="316 + $trade_rank"/></do_elseif>
+		<do_elseif value="$sector_count == 5"><set_value name="$supplied_miners_actual" exact="390 + $trade_rank"/></do_elseif>
+		<do_elseif value="$sector_count == 6"><set_value name="$supplied_miners_actual" exact="454 + $trade_rank"/></do_elseif>
+		<do_elseif value="$sector_count == 7"><set_value name="$supplied_miners_actual" exact="510 + $trade_rank"/></do_elseif>
+		<do_elseif value="$sector_count == 8"><set_value name="$supplied_miners_actual" exact="558 + $trade_rank"/></do_elseif>
+		<do_elseif value="$sector_count == 9"><set_value name="$supplied_miners_actual" exact="600 + $trade_rank"/></do_elseif>
+		<do_elseif value="$sector_count gt 9"><set_value name="$supplied_miners_actual" exact="600 + (($sector_count - 9) * 32) + $trade_rank"/></do_elseif>
+
+		<set_value name="$supplied_traders_actual" exact="72 + $trade_rank"/>
+		<do_if value="$sector_count == 1"><set_value name="$supplied_traders_actual" exact="94 + $trade_rank"/></do_if>
+		<do_elseif value="$sector_count == 2"><set_value name="$supplied_traders_actual" exact="122 + $trade_rank"/></do_elseif>
+		<do_elseif value="$sector_count == 3"><set_value name="$supplied_traders_actual" exact="158 + $trade_rank"/></do_elseif>
+		<do_elseif value="$sector_count == 4"><set_value name="$supplied_traders_actual" exact="204 + $trade_rank"/></do_elseif>
+		<do_elseif value="$sector_count == 5"><set_value name="$supplied_traders_actual" exact="254 + $trade_rank"/></do_elseif>
+		<do_elseif value="$sector_count == 6"><set_value name="$supplied_traders_actual" exact="298 + $trade_rank"/></do_elseif>
+		<do_elseif value="$sector_count == 7"><set_value name="$supplied_traders_actual" exact="336 + $trade_rank"/></do_elseif>
+		<do_elseif value="$sector_count == 8"><set_value name="$supplied_traders_actual" exact="370 + $trade_rank"/></do_elseif>
+		<do_elseif value="$sector_count == 9"><set_value name="$supplied_traders_actual" exact="400 + $trade_rank"/></do_elseif>
+		<do_elseif value="$sector_count gt 9"><set_value name="$supplied_traders_actual" exact="400 + (($sector_count - 9) * 22) + $trade_rank"/></do_elseif>
+
+		<set_value name="$supplied_scavengers_actual" exact="(md.anghelos_sector_ruler_config.anghelos_config.$anghelos_supplied_scavengers * $sector_count)+ md.anghelos_sector_ruler_config.anghelos_config.$anghelos_supplied_scavengersS + $scavenger_rank_bonus"/>
+		<set_value name="$supplied_builders_actual" exact="(md.anghelos_sector_ruler_config.anghelos_config.$anghelos_supplied_utility * $sector_count)+ md.anghelos_sector_ruler_config.anghelos_config.$anghelos_supplied_utilityS + $utility_rank_bonus"/>
+		<set_value name="$supplied_defence_modules_actual" exact="(md.anghelos_sector_ruler_config.anghelos_config.$anghelos_supplied_defence * $sector_count)+ md.anghelos_sector_ruler_config.anghelos_config.$anghelos_supplied_defenceS + $defence_rank_bonus"/>
+		<set_value name="$supplied_build_modules_actual" exact="(md.anghelos_sector_ruler_config.anghelos_config.$anghelos_supplied_building * $sector_count) + md.anghelos_sector_ruler_config.anghelos_config.$anghelos_supplied_buildingS"/>
+
+		<set_value name="$war_threshold_actual" exact="150"/>
+		<do_if value="$sector_count == 1"><set_value name="$war_threshold_actual" exact="185"/></do_if>
+		<do_elseif value="$sector_count == 2"><set_value name="$war_threshold_actual" exact="220"/></do_elseif>
+		<do_elseif value="$sector_count == 3"><set_value name="$war_threshold_actual" exact="262"/></do_elseif>
+		<do_elseif value="$sector_count == 4"><set_value name="$war_threshold_actual" exact="304"/></do_elseif>
+		<do_elseif value="$sector_count == 5"><set_value name="$war_threshold_actual" exact="353"/></do_elseif>
+		<do_elseif value="$sector_count == 6"><set_value name="$war_threshold_actual" exact="388"/></do_elseif>
+		<do_elseif value="$sector_count == 7"><set_value name="$war_threshold_actual" exact="416"/></do_elseif>
+		<do_elseif value="$sector_count == 8"><set_value name="$war_threshold_actual" exact="437"/></do_elseif>
+		<do_elseif value="$sector_count == 9"><set_value name="$war_threshold_actual" exact="451"/></do_elseif>
+		<do_elseif value="$sector_count gt 9"><set_value name="$war_threshold_actual" exact="451"/></do_elseif>
+		<find_ship_by_true_owner name="$XLShipss" multiple="true" checkoperational="true" masstraffic="false" unit="false" class="class.ship_xl" primarypurpose="purpose.fight" space="player.galaxy" faction="faction.player" recursive="true"/>
+		<find_ship_by_true_owner name="$XLDockedShipss" multiple="true" checkoperational="true" masstraffic="false" unit="false" class="class.ship_xl" primarypurpose="purpose.fight" space="player.galaxy" faction="faction.player" docked="true" recursive="true"/>
+		<remove_from_list name="$XLDockedShipss" list="$XLShipss" multiple="true"/>
+		<append_list_elements name="$XLShipss" other="$XLDockedShipss"/>
+		<find_ship_by_true_owner name="$LShipss" multiple="true" checkoperational="true" masstraffic="false" unit="false" class="class.ship_l" primarypurpose="purpose.fight" space="player.galaxy" faction="faction.player" recursive="true"/>
+		<find_ship_by_true_owner name="$LDockedShipss" multiple="true" checkoperational="true" masstraffic="false" unit="false" class="class.ship_l" primarypurpose="purpose.fight" space="player.galaxy" faction="faction.player" docked="true" recursive="true"/>
+		<remove_from_list name="$LDockedShipss" list="$LShipss" multiple="true"/>
+		<append_list_elements name="$LShipss" other="$LDockedShipss"/>
+		<find_ship_by_true_owner name="$MShipss" multiple="true" checkoperational="true" masstraffic="false" unit="false" class="class.ship_m" primarypurpose="purpose.fight" space="player.galaxy" faction="faction.player" recursive="true"/>
+		<find_ship_by_true_owner name="$MDockedShipss" multiple="true" checkoperational="true" masstraffic="false" unit="false" class="class.ship_m" primarypurpose="purpose.fight" space="player.galaxy" faction="faction.player" docked="true" recursive="true"/>
+		<remove_from_list name="$MDockedShipss" list="$MShipss" multiple="true"/>
+		<append_list_elements name="$MShipss" other="$MDockedShipss"/>
+		<find_ship_by_true_owner name="$SShipss" multiple="true" checkoperational="true" masstraffic="false" unit="false" class="class.ship_s" primarypurpose="purpose.fight" space="player.galaxy" faction="faction.player" recursive="true"/>
+		<find_ship_by_true_owner name="$SDockedShipss" multiple="true" checkoperational="true" masstraffic="false" unit="false" class="class.ship_s" primarypurpose="purpose.fight" space="player.galaxy" faction="faction.player" docked="true" recursive="true"/>
+		<remove_from_list name="$SDockedShipss" list="$SShipss" multiple="true"/>
+		<append_list_elements name="$SShipss" other="$SDockedShipss"/>
+		<set_value name="$TotalShipss" exact="(([$XLShipss.count,0].max) * 21) + (([$LShipss.count,0].max) * 9) + (([$MShipss.count,0].max) * 3) + ([$SShipss.count,0].max)"/>					
+		<find_ship_by_true_owner name="$TraderLShipss" multiple="true" checkoperational="true" masstraffic="false" unit="false" class="class.ship_l" primarypurpose="purpose.trade" space="player.galaxy" faction="faction.player" recursive="true"/>
+		<find_ship_by_true_owner name="$TraderLDockedShipss" multiple="true" checkoperational="true" masstraffic="false" unit="false" class="class.ship_l" primarypurpose="purpose.trade" space="player.galaxy" faction="faction.player" docked="true" recursive="true"/>
+		<remove_from_list name="$TraderLDockedShipss" list="$TraderLShipss" multiple="true"/>
+		<append_list_elements name="$TraderLShipss" other="$TraderLDockedShipss"/>
+		<find_ship_by_true_owner name="$TraderMShipss" multiple="true" checkoperational="true" masstraffic="false" unit="false" class="class.ship_m" primarypurpose="purpose.trade" space="player.galaxy" faction="faction.player" recursive="true"/>
+		<find_ship_by_true_owner name="$TraderMDockedShipss" multiple="true" checkoperational="true" masstraffic="false" unit="false" class="class.ship_m" primarypurpose="purpose.trade" space="player.galaxy" faction="faction.player" docked="true" recursive="true"/>
+		<remove_from_list name="$TraderMDockedShipss" list="$TraderMShipss" multiple="true"/>
+		<append_list_elements name="$TraderMShipss" other="$TraderMDockedShipss"/>
+		<find_ship_by_true_owner name="$TraderSShipss" multiple="true" checkoperational="true" masstraffic="false" unit="false" class="class.ship_s" primarypurpose="purpose.trade" space="player.galaxy" faction="faction.player" recursive="true"/>
+		<find_ship_by_true_owner name="$TraderSDockedShipss" multiple="true" checkoperational="true" masstraffic="false" unit="false" class="class.ship_s" primarypurpose="purpose.trade" space="player.galaxy" faction="faction.player" docked="true" recursive="true"/>
+		<remove_from_list name="$TraderSDockedShipss" list="$TraderSShipss" multiple="true"/>
+		<append_list_elements name="$TraderSShipss" other="$TraderSDockedShipss"/>
+		<set_value name="$TraderTotalShipss" exact="(([$TraderLShipss.count,0].max) * 9) + (([$TraderMShipss.count,0].max) * 3) + ([$TraderSShipss.count,0].max)"/>					
+		<find_ship_by_true_owner name="$MinerLShipss" multiple="true" checkoperational="true" masstraffic="false" unit="false" class="class.ship_l" primarypurpose="purpose.mine" space="player.galaxy" faction="faction.player" recursive="true"/>
+		<find_ship_by_true_owner name="$MinerLDockedShipss" multiple="true" checkoperational="true" masstraffic="false" unit="false" class="class.ship_l" primarypurpose="purpose.mine" space="player.galaxy" faction="faction.player" docked="true" recursive="true"/>
+		<remove_from_list name="$MinerLDockedShipss" list="$MinerLShipss" multiple="true"/>
+		<append_list_elements name="$MinerLShipss" other="$MinerLDockedShipss"/>
+		<find_ship_by_true_owner name="$MinerMShipss" multiple="true" checkoperational="true" masstraffic="false" unit="false" class="class.ship_m" primarypurpose="purpose.mine" space="player.galaxy" faction="faction.player" recursive="true"/>
+		<find_ship_by_true_owner name="$MinerMDockedShipss" multiple="true" checkoperational="true" masstraffic="false" unit="false" class="class.ship_m" primarypurpose="purpose.mine" space="player.galaxy" faction="faction.player" docked="true" recursive="true"/>
+		<remove_from_list name="$MinerMDockedShipss" list="$MinerMShipss" multiple="true"/>
+		<append_list_elements name="$MinerMShipss" other="$MinerMDockedShipss"/>
+		<find_ship_by_true_owner name="$MinerSShipss" multiple="true" checkoperational="true" masstraffic="false" unit="false" class="class.ship_s" primarypurpose="purpose.mine" space="player.galaxy" faction="faction.player" recursive="true"/>
+		<find_ship_by_true_owner name="$MinerSDockedShipss" multiple="true" checkoperational="true" masstraffic="false" unit="false" class="class.ship_s" primarypurpose="purpose.mine" space="player.galaxy" faction="faction.player" docked="true" recursive="true"/>
+		<remove_from_list name="$MinerSDockedShipss" list="$MinerSShipss" multiple="true"/>
+		<append_list_elements name="$MinerSShipss" other="$MinerSDockedShipss"/>
+		<set_value name="$MinerTotalShipss" exact="(([$MinerLShipss.count,0].max) * 9) + (([$MinerMShipss.count,0].max) * 3) + ([$MinerSShipss.count,0].max)"/>
+		<find_ship_by_true_owner name="$ScavengerMShipss" multiple="true" checkoperational="true" masstraffic="false" unit="false" class="class.ship_m" primarypurpose="purpose.salvage" space="player.galaxy" faction="faction.player" recursive="true"/>
+		<find_ship_by_true_owner name="$ScavengerMDockedShipss" multiple="true" checkoperational="true" masstraffic="false" unit="false" class="class.ship_m" primarypurpose="purpose.salvage" space="player.galaxy" faction="faction.player" docked="true" recursive="true"/>
+		<remove_from_list name="$ScavengerMDockedShipss" list="$ScavengerMShipss" multiple="true"/>
+		<append_list_elements name="$ScavengerMShipss" other="$ScavengerMDockedShipss"/>
+		<find_ship_by_true_owner name="$BuilderXLShipss" multiple="true" checkoperational="true" masstraffic="false" unit="false" class="class.ship_xl" space="player.galaxy" faction="faction.player" recursive="true">
+			<match_any>
+				<match primarypurpose="purpose.build"/>
+				<match primarypurpose="purpose.auxiliary"/>
+			</match_any>
+		</find_ship_by_true_owner>
+		<find_ship_by_true_owner name="$BuilderXLDockedShipss" multiple="true" checkoperational="true" masstraffic="false" unit="false" class="class.ship_xl" space="player.galaxy" faction="faction.player" docked="true" recursive="true">
+			<match_any>
+				<match primarypurpose="purpose.build"/>
+				<match primarypurpose="purpose.auxiliary"/>
+			</match_any>
+		</find_ship_by_true_owner>
+		<remove_from_list name="$BuilderXLDockedShipss" list="$BuilderXLShipss" multiple="true"/>
+		<append_list_elements name="$BuilderXLShipss" other="$BuilderXLDockedShipss"/>
+		<find_ship_by_true_owner name="$BuilderLShipss" multiple="true" checkoperational="true" masstraffic="false" unit="false" class="class.ship_l" primarypurpose="purpose.dismantling" space="player.galaxy" faction="faction.player" recursive="true"/>
+		<find_ship_by_true_owner name="$BuilderLDockedShipss" multiple="true" checkoperational="true" masstraffic="false" unit="false" class="class.ship_l" primarypurpose="purpose.dismantling" space="player.galaxy" faction="faction.player" docked="true" recursive="true"/>
+		<remove_from_list name="$BuilderLDockedShipss" list="$BuilderLShipss" multiple="true"/>
+		<append_list_elements name="$BuilderLShipss" other="$BuilderLDockedShipss"/>
+		<set_value name="$BuilderTotalShipss" exact="(([$BuilderXLShipss.count,0].max) + ([$BuilderLShipss.count,0].max))"/>
+		<find_station_by_true_owner name="$stations_player_all" recursive="true" multiple="true" space="player.galaxy" faction="faction.player" known="true"/>
+		<do_if value="$stations_player_all.count">
+			<do_all exact="$stations_player_all.count" counter="$i">
+				<set_value name="$stations_all" exact="$stations_player_all.{$i}"/>
+				<set_value name="$stations_all_build_modules" exact="$stations_all.buildmodules"/>
+				<set_value name="$stations_all_defence_modules" exact="$stations_all.defencemodules"/>
+				<append_list_elements name="$build_modules_player" other="$stations_all_build_modules"/>
+				<append_list_elements name="$defence_modules_player" other="$stations_all_defence_modules"/>
+				<do_if value="$stations_all.welfaremodules.count">
+					<set_value name="$workforce_tax__welfare_total" operation="add" exact="(($stations_all.workforce.amount * md.anghelos_sector_ruler_config.anghelos_config.$anghelos_workforce_welfare_income)*100)ct "/>
+					<set_value name="$workforce_welfare_total" operation="add" exact="$stations_all.workforce.amount"/>	
+				</do_if>
+			</do_all>
+		</do_if>		
+	  
+		<!--INFO PANEL-->
+		<do_if value="([$sectors_player.count,0].max) gt md.anghelos_sector_ruler_config.anghelos_config.$anghelos_crysis">  
+			<signal_cue_instantly cue="md.Simple_Menu_API.Add_Row"/>
+			<signal_cue_instantly cue="md.Simple_Menu_API.Make_Text" param="table[
+			  $col=1, $colSpan=8,$fontsize=9,
+			  $color='Helper.color.red', 
+			  $text={104710471,7000}]"/>
+		</do_if>
+		<signal_cue_instantly cue="md.Simple_Menu_API.Add_Row"/> 
+		<signal_cue_instantly cue="md.Simple_Menu_API.Make_Text" param="table[
+          $col=1, $colSpan=8,$fontsize=9,
+          $text={104710471,2010} + ([$sectors_player.count,0].max)]"/>
+		<signal_cue_instantly cue="md.Simple_Menu_API.Add_Row"/> 
+		<signal_cue_instantly cue="md.Simple_Menu_API.Make_Text" param="table[
+          $col=1, $colSpan=8,$fontsize=9,
+          $text={104710471,2020} + $workforce_total]"/>
+		<signal_cue_instantly cue="md.Simple_Menu_API.Add_Row"/>
+		<signal_cue_instantly cue="md.Simple_Menu_API.Make_Text" param="table[
+          $col=1, $colSpan=8,$fontsize=9,
+          $text={104710471,2030} + $sector_tax_total.formatted.{'%s%Cr'}]"/>
+		<signal_cue_instantly cue="md.Simple_Menu_API.Add_Row"/>
+		<signal_cue_instantly cue="md.Simple_Menu_API.Make_Text" param="table[
+          $col=1, $colSpan=8,$fontsize=9,
+          $text={104710471,2040} + $workforce_tax_total.formatted.{'%s%Cr'}]"/>
+		<signal_cue_instantly cue="md.Simple_Menu_API.Add_Row"/> 
+		<signal_cue_instantly cue="md.Simple_Menu_API.Make_Text" param="table[
+          $col=1, $colSpan=8,$fontsize=9,
+          $text={104710471,2300} + $workforce_welfare_total]"/>
+		<signal_cue_instantly cue="md.Simple_Menu_API.Add_Row"/>
+		<signal_cue_instantly cue="md.Simple_Menu_API.Make_Text" param="table[
+          $col=1, $colSpan=8,$fontsize=9,
+          $text={104710471,2400} + $workforce_tax__welfare_total.formatted.{'%s%Cr'}]"/>		
+		<do_if value="$TotalShipss gt $war_threshold_actual">
+			<signal_cue_instantly cue="md.Simple_Menu_API.Add_Row"/>
+			<signal_cue_instantly cue="md.Simple_Menu_API.Make_Text" param="table[
+			  $col=1, $colSpan=8,$fontsize=9,
+			  $color='Helper.color.red', 
+			  $text={104710471,7010}]"/>
+		</do_if>	
+		<signal_cue_instantly cue="md.Simple_Menu_API.Add_Row"/>
+		<signal_cue_instantly cue="md.Simple_Menu_API.Make_Text" param="table[
+          $col=1, $colSpan=8,$fontsize=9,
+          $text={104710471,2050} + $TotalShipss + {104710471,2051} + $supplied_military_actual + {104710471,2500} + $war_threshold_actual]"/>
+		<do_if value="$TotalShipss gt $supplied_military_actual">
+			<signal_cue_instantly cue="md.Simple_Menu_API.Add_Row"/>
+			<signal_cue_instantly cue="md.Simple_Menu_API.Make_Text" param="table[
+			  $col=1, $colSpan=8,$fontsize=9,
+			  $color='Helper.color.red', 
+			  $text={104710471,7020}]"/>
+		</do_if>
+		<signal_cue_instantly cue="md.Simple_Menu_API.Add_Row"/>
+		<signal_cue_instantly cue="md.Simple_Menu_API.Make_Text" param="table[
+          $col=1, $colSpan=8,$fontsize=9,
+		  $mouseOverText={104710471,4000},
+          $text={104710471,2052} + ([$XLShipss.count,0].max)]"/>
+		<signal_cue_instantly cue="md.Simple_Menu_API.Add_Row"/>
+		<signal_cue_instantly cue="md.Simple_Menu_API.Make_Text" param="table[
+          $col=1, $colSpan=8,$fontsize=9,
+		  $mouseOverText={104710471,4010},
+          $text={104710471,2053} + ([$LShipss.count,0].max)]"/>
+		<signal_cue_instantly cue="md.Simple_Menu_API.Add_Row"/>
+		<signal_cue_instantly cue="md.Simple_Menu_API.Make_Text" param="table[
+          $col=1, $colSpan=8,$fontsize=9,
+		  $mouseOverText={104710471,4020},
+          $text={104710471,2054} + ([$MShipss.count,0].max)]"/>
+		<signal_cue_instantly cue="md.Simple_Menu_API.Add_Row"/>
+		<signal_cue_instantly cue="md.Simple_Menu_API.Make_Text" param="table[
+          $col=1, $colSpan=8,$fontsize=9,
+		  $mouseOverText={104710471,4030},
+          $text={104710471,2055} + ([$SShipss.count,0].max)]"/>
+		<signal_cue_instantly cue="md.Simple_Menu_API.Add_Row"/>
+		<signal_cue_instantly cue="md.Simple_Menu_API.Make_Text" param="table[
+          $col=1, $colSpan=8,$fontsize=9,
+          $text={104710471,2060} + $MinerTotalShipss + {104710471,2051} + $supplied_miners_actual]"/>
+		<do_if value="$MinerTotalShipss gt $supplied_miners_actual">
+			<signal_cue_instantly cue="md.Simple_Menu_API.Add_Row"/>
+			<signal_cue_instantly cue="md.Simple_Menu_API.Make_Text" param="table[
+			  $col=1, $colSpan=8,$fontsize=9,
+			  $color='Helper.color.red', 
+			  $text={104710471,7030}]"/>
+		</do_if>
+		<signal_cue_instantly cue="md.Simple_Menu_API.Add_Row"/>
+		<signal_cue_instantly cue="md.Simple_Menu_API.Make_Text" param="table[
+          $col=1, $colSpan=8,$fontsize=9,
+		  $mouseOverText={104710471,4010},
+          $text={104710471,2053} + ([$MinerLShipss.count,0].max)]"/>
+		<signal_cue_instantly cue="md.Simple_Menu_API.Add_Row"/>
+		<signal_cue_instantly cue="md.Simple_Menu_API.Make_Text" param="table[
+          $col=1, $colSpan=8,$fontsize=9,
+		  $mouseOverText={104710471,4020},
+          $text={104710471,2054} + ([$MinerMShipss.count,0].max)]"/>
+		<signal_cue_instantly cue="md.Simple_Menu_API.Add_Row"/>
+		<signal_cue_instantly cue="md.Simple_Menu_API.Make_Text" param="table[
+          $col=1, $colSpan=8,$fontsize=9,
+		  $mouseOverText={104710471,4030},
+          $text={104710471,2055} + ([$MinerSShipss.count,0].max)]"/>
+		<signal_cue_instantly cue="md.Simple_Menu_API.Add_Row"/>
+		<signal_cue_instantly cue="md.Simple_Menu_API.Make_Text" param="table[
+          $col=1, $colSpan=8,$fontsize=9,
+          $text={104710471,2070} + $TraderTotalShipss + {104710471,2051} + $supplied_traders_actual]"/>
+		<do_if value="$TraderTotalShipss gt $supplied_traders_actual">
+			<signal_cue_instantly cue="md.Simple_Menu_API.Add_Row"/>
+			<signal_cue_instantly cue="md.Simple_Menu_API.Make_Text" param="table[
+			  $col=1, $colSpan=8,$fontsize=9,
+			  $color='Helper.color.red', 
+			  $text={104710471,7040}]"/>
+		</do_if>
+		<signal_cue_instantly cue="md.Simple_Menu_API.Add_Row"/>
+		<signal_cue_instantly cue="md.Simple_Menu_API.Make_Text" param="table[
+          $col=1, $colSpan=8,$fontsize=9,
+		  $mouseOverText={104710471,4010},
+          $text={104710471,2053} + ([$TraderLShipss.count,0].max)]"/>
+		<signal_cue_instantly cue="md.Simple_Menu_API.Add_Row"/>
+		<signal_cue_instantly cue="md.Simple_Menu_API.Make_Text" param="table[
+          $col=1, $colSpan=8,$fontsize=9,
+		  $mouseOverText={104710471,4020},
+          $text={104710471,2054} + ([$TraderMShipss.count,0].max)]"/>
+		<signal_cue_instantly cue="md.Simple_Menu_API.Add_Row"/>
+		<signal_cue_instantly cue="md.Simple_Menu_API.Make_Text" param="table[
+          $col=1, $colSpan=8,$fontsize=9,
+		  $mouseOverText={104710471,4030},
+          $text={104710471,2055} + ([$TraderSShipss.count,0].max)]"/>
+		<signal_cue_instantly cue="md.Simple_Menu_API.Add_Row"/>
+		<signal_cue_instantly cue="md.Simple_Menu_API.Make_Text" param="table[
+          $col=1, $colSpan=8,$fontsize=9,
+		  $mouseOverText={104710471,4050},
+          $text={104710471,2090} + $BuilderTotalShipss + {104710471,2051} + $supplied_builders_actual]"/>
+		<do_if value="$BuilderTotalShipss gt $supplied_builders_actual">
+			<signal_cue_instantly cue="md.Simple_Menu_API.Add_Row"/>
+			<signal_cue_instantly cue="md.Simple_Menu_API.Make_Text" param="table[
+			  $col=1, $colSpan=8,$fontsize=9,
+			  $color='Helper.color.red', 
+			  $text={104710471,7050}]"/>
+		</do_if>
+		<signal_cue_instantly cue="md.Simple_Menu_API.Add_Row"/>
+		<signal_cue_instantly cue="md.Simple_Menu_API.Make_Text" param="table[
+          $col=1, $colSpan=8,$fontsize=9,
+		  $mouseOverText={104710471,4050},
+          $text={104710471,2091} + ([$BuilderXLShipss.count,0].max)]"/>
+		<signal_cue_instantly cue="md.Simple_Menu_API.Add_Row"/>
+		<signal_cue_instantly cue="md.Simple_Menu_API.Make_Text" param="table[
+          $col=1, $colSpan=8,$fontsize=9,
+		  $mouseOverText={104710471,4050},
+          $text={104710471,2092} + ([$BuilderLShipss.count,0].max)]"/>
+		<signal_cue_instantly cue="md.Simple_Menu_API.Add_Row"/>
+		<signal_cue_instantly cue="md.Simple_Menu_API.Make_Text" param="table[
+          $col=1, $colSpan=8,$fontsize=9,
+		  $mouseOverText={104710471,4040},
+          $text={104710471,2080} + ([$ScavengerMShipss.count,0].max) + {104710471,2051} + $supplied_scavengers_actual]"/>
+		<do_if value="([$ScavengerMShipss.count,0].max) gt $supplied_scavengers_actual">
+			<signal_cue_instantly cue="md.Simple_Menu_API.Add_Row"/>
+			<signal_cue_instantly cue="md.Simple_Menu_API.Make_Text" param="table[
+			  $col=1, $colSpan=8,$fontsize=9,
+			  $color='Helper.color.red', 
+			  $text={104710471,7060}]"/>
+		</do_if>
+		<signal_cue_instantly cue="md.Simple_Menu_API.Add_Row"/>
+		<signal_cue_instantly cue="md.Simple_Menu_API.Make_Text" param="table[
+          $col=1, $colSpan=8,$fontsize=9,
+		  $mouseOverText={104710471,4060},
+          $text={104710471,2100} + ([$build_modules_player.count,0].max) + {104710471,2051} + $supplied_build_modules_actual]"/>
+		<do_if value="([$build_modules_player.count,0].max) gt $supplied_build_modules_actual">
+			<signal_cue_instantly cue="md.Simple_Menu_API.Add_Row"/>
+			<signal_cue_instantly cue="md.Simple_Menu_API.Make_Text" param="table[
+			  $col=1, $colSpan=8,$fontsize=9,
+			  $color='Helper.color.red', 
+			  $text={104710471,7070}]"/>
+		</do_if>
+		<signal_cue_instantly cue="md.Simple_Menu_API.Add_Row"/>
+		<signal_cue_instantly cue="md.Simple_Menu_API.Make_Text" param="table[
+          $col=1, $colSpan=8,$fontsize=9,
+		  $mouseOverText={104710471,4070},
+          $text={104710471,2200} + ([$defence_modules_player.count,0].max) + {104710471,2051} + $supplied_defence_modules_actual]"/>
+		<do_if value="([$defence_modules_player.count,0].max) gt $supplied_defence_modules_actual">
+			<signal_cue_instantly cue="md.Simple_Menu_API.Add_Row"/>
+			<signal_cue_instantly cue="md.Simple_Menu_API.Make_Text" param="table[
+			  $col=1, $colSpan=8,$fontsize=9,
+			  $color='Helper.color.red', 
+			  $text={104710471,7080}]"/>
+		</do_if>
+      </actions>
+    </cue>
+	
+	<!-- Settings menu -->
+	<cue name="anghelos_build_options_menu" instantiate="true" namespace="this">
+      <conditions>
+        <event_cue_signalled/>
+      </conditions>
+      <actions>		
+        <!--Run Interval-->
+        <signal_cue_instantly cue="md.Simple_Menu_API.Add_Row"/>
+        <signal_cue_instantly cue="md.Simple_Menu_API.Make_Text" param="table[
+          $col=1, $colSpan=2,$fontsize=9,
+		  $mouseOverText={104710471,4400},
+          $text={104710471,3000}]"/>
+        <signal_cue_instantly cue="md.Simple_Menu_API.Make_Slider" param="table[
+          $id='anghelos_interval',
+          $start=md.anghelos_sector_ruler_config.anghelos_config.$anghelos_interval,
+          $col=3,
+          $min=1.0, $max=120.0, $suffix='minutes',$fontsize=9,
+          $onSliderCellChanged=anghelos_slider_change]"/>
+		<!-- Extra notification warnings -->  
+		 <signal_cue_instantly cue="md.Simple_Menu_API.Add_Row"/>
+        <signal_cue_instantly cue="md.Simple_Menu_API.Make_Text" param="table[
+          $col=1, $colSpan=2,$fontsize=9,
+          $text={104710471,3001}]"/>
+        <signal_cue_instantly cue="md.Simple_Menu_API.Make_CheckBox" param="table[
+          $id='anghelos_do_notification',
+          $checked=md.anghelos_sector_ruler_config.anghelos_config.$anghelos_do_notification,
+          $col=3,
+          $width='Helper.standardButtonHeight', $height='Helper.standardButtonHeight',
+          $mouseOverText={104710471,4600},
+          $onClick=anghelos_save_change]"/>
+        <!--Sector Income-->
+        <signal_cue_instantly cue="md.Simple_Menu_API.Add_Row"/>
+        <signal_cue_instantly cue="md.Simple_Menu_API.Make_Text" param="table[
+          $col=1, $colSpan=2,$fontsize=9,
+          $text={104710471,3010}]"/>
+        <signal_cue_instantly cue="md.Simple_Menu_API.Make_Slider" param="table[
+          $id='anghelos_sector_income',
+          $start=md.anghelos_sector_ruler_config.anghelos_config.$anghelos_sector_income,
+          $col=3,
+          $min=0.0, $max=100000000.0, $step=1, $suffix='Cr',
+          $onSliderCellChanged=anghelos_slider_change]"/>
+		<!--workforce Income-->
+        <signal_cue_instantly cue="md.Simple_Menu_API.Add_Row"/>
+        <signal_cue_instantly cue="md.Simple_Menu_API.Make_Text" param="table[
+          $col=1, $colSpan=2,$fontsize=9,
+          $text={104710471,3020}]"/>
+        <signal_cue_instantly cue="md.Simple_Menu_API.Make_Slider" param="table[
+          $id='anghelos_workforce_income',
+          $start=md.anghelos_sector_ruler_config.anghelos_config.$anghelos_workforce_income,
+          $col=3,
+          $min=0.0, $max=1000.0, $step=1, $suffix='Cr',
+          $onSliderCellChanged=anghelos_slider_change]"/>
+		<!--workforce welfare Income-->
+        <signal_cue_instantly cue="md.Simple_Menu_API.Add_Row"/>
+        <signal_cue_instantly cue="md.Simple_Menu_API.Make_Text" param="table[
+          $col=1, $colSpan=2,$fontsize=9,
+		  $mouseOverText={104710471,4500},
+          $text={104710471,3100}]"/>
+        <signal_cue_instantly cue="md.Simple_Menu_API.Make_Slider" param="table[
+          $id='anghelos_workforce_welfare_income',
+          $start=md.anghelos_sector_ruler_config.anghelos_config.$anghelos_workforce_welfare_income,
+          $col=3,
+          $min=0.0, $max=1000.0, $step=1, $suffix='Cr',
+          $onSliderCellChanged=anghelos_slider_change]"/>
+		<!--war threshold-->
+        <signal_cue_instantly cue="md.Simple_Menu_API.Add_Row"/>
+        <signal_cue_instantly cue="md.Simple_Menu_API.Make_Text" param="table[
+          $col=1, $colSpan=2,$fontsize=9,
+		  $mouseOverText={104710471,4080},
+          $text={104710471,3030}]"/>
+        <signal_cue_instantly cue="md.Simple_Menu_API.Make_Slider" param="table[
+          $id='anghelos_war_strength',
+          $start=md.anghelos_sector_ruler_config.anghelos_config.$anghelos_war_strength,
+          $col=3,
+          $min=0.0, $max=10000.0, $step=1,
+          $onSliderCellChanged=anghelos_slider_change]"/>
+		  <!--crysis threshold-->
+        <signal_cue_instantly cue="md.Simple_Menu_API.Add_Row"/>
+        <signal_cue_instantly cue="md.Simple_Menu_API.Make_Text" param="table[
+          $col=1, $colSpan=2,$fontsize=9,
+		  $mouseOverText={104710471,4090},
+          $text={104710471,3040}]"/>
+        <signal_cue_instantly cue="md.Simple_Menu_API.Make_Slider" param="table[
+          $id='anghelos_crysis',
+          $start=md.anghelos_sector_ruler_config.anghelos_config.$anghelos_crysis,
+          $col=3,
+          $min=0.0, $max=100.0, $step=1,
+          $onSliderCellChanged=anghelos_slider_change]"/>
+		  <!--sector supply military-->
+        <signal_cue_instantly cue="md.Simple_Menu_API.Add_Row"/>
+        <signal_cue_instantly cue="md.Simple_Menu_API.Make_Text" param="table[
+          $col=1, $colSpan=2,$fontsize=9,
+		  $mouseOverText={104710471,4100},
+          $text={104710471,3050}]"/>
+        <signal_cue_instantly cue="md.Simple_Menu_API.Make_Slider" param="table[
+          $id='anghelos_supplied_military',
+          $start=md.anghelos_sector_ruler_config.anghelos_config.$anghelos_supplied_military,
+          $col=3,
+          $min=0.0, $max=1000.0, $step=1,
+          $onSliderCellChanged=anghelos_slider_change]"/>
+		<!--sector supply miners-->
+        <signal_cue_instantly cue="md.Simple_Menu_API.Add_Row"/>
+        <signal_cue_instantly cue="md.Simple_Menu_API.Make_Text" param="table[
+          $col=1, $colSpan=2,$fontsize=9,
+		  $mouseOverText={104710471,4200},
+          $text={104710471,3060}]"/>
+        <signal_cue_instantly cue="md.Simple_Menu_API.Make_Slider" param="table[
+          $id='anghelos_supplied_miners',
+          $start=md.anghelos_sector_ruler_config.anghelos_config.$anghelos_supplied_miners,
+          $col=3,
+          $min=0.0, $max=1000.0, $step=1,
+          $onSliderCellChanged=anghelos_slider_change]"/>
+		<!--sector supply traders-->
+        <signal_cue_instantly cue="md.Simple_Menu_API.Add_Row"/>
+        <signal_cue_instantly cue="md.Simple_Menu_API.Make_Text" param="table[
+          $col=1, $colSpan=2,$fontsize=9,
+		  $mouseOverText={104710471,4200},
+          $text={104710471,3070}]"/>
+        <signal_cue_instantly cue="md.Simple_Menu_API.Make_Slider" param="table[
+          $id='anghelos_supplied_traders',
+          $start=md.anghelos_sector_ruler_config.anghelos_config.$anghelos_supplied_traders,
+          $col=3,
+          $min=0.0, $max=1000.0, $step=1,
+          $onSliderCellChanged=anghelos_slider_change]"/>
+		<!--sector supply scavengers-->
+        <signal_cue_instantly cue="md.Simple_Menu_API.Add_Row"/>
+        <signal_cue_instantly cue="md.Simple_Menu_API.Make_Text" param="table[
+          $col=1, $colSpan=2,$fontsize=9,
+		  $mouseOverText={104710471,4040},
+          $text={104710471,3080}]"/>
+        <signal_cue_instantly cue="md.Simple_Menu_API.Make_Slider" param="table[
+          $id='anghelos_supplied_scavengers',
+          $start=md.anghelos_sector_ruler_config.anghelos_config.$anghelos_supplied_scavengers,
+          $col=3,
+          $min=0.0, $max=1000.0, $step=1,
+          $onSliderCellChanged=anghelos_slider_change]"/>
+		<!--sector supply utility (building, auxilliary ships and Teuta)-->
+        <signal_cue_instantly cue="md.Simple_Menu_API.Add_Row"/>
+        <signal_cue_instantly cue="md.Simple_Menu_API.Make_Text" param="table[
+          $col=1, $colSpan=2,$fontsize=9,
+		  $mouseOverText={104710471,4050},
+          $text={104710471,3090}]"/>
+        <signal_cue_instantly cue="md.Simple_Menu_API.Make_Slider" param="table[
+          $id='anghelos_supplied_utility',
+          $start=md.anghelos_sector_ruler_config.anghelos_config.$anghelos_supplied_utility,
+          $col=3,
+          $min=0.0, $max=1000.0, $step=1,
+          $onSliderCellChanged=anghelos_slider_change]"/>
+		<!--sector supply building modules-->
+        <signal_cue_instantly cue="md.Simple_Menu_API.Add_Row"/>
+        <signal_cue_instantly cue="md.Simple_Menu_API.Make_Text" param="table[
+          $col=1, $colSpan=2,$fontsize=9,
+		  $mouseOverText={104710471,4060},
+          $text={104710471,3011}]"/>
+        <signal_cue_instantly cue="md.Simple_Menu_API.Make_Slider" param="table[
+          $id='anghelos_supplied_building',
+          $start=md.anghelos_sector_ruler_config.anghelos_config.$anghelos_supplied_building,
+          $col=3,
+          $min=0.0, $max=1000.0, $step=1,
+          $onSliderCellChanged=anghelos_slider_change]"/>
+		<!--sector supply defence modules-->
+        <signal_cue_instantly cue="md.Simple_Menu_API.Add_Row"/>
+        <signal_cue_instantly cue="md.Simple_Menu_API.Make_Text" param="table[
+          $col=1, $colSpan=2,$fontsize=9,
+		  $mouseOverText={104710471,4070},
+          $text={104710471,3012}]"/>
+        <signal_cue_instantly cue="md.Simple_Menu_API.Make_Slider" param="table[
+          $id='anghelos_supplied_defence',
+          $start=md.anghelos_sector_ruler_config.anghelos_config.$anghelos_supplied_defence,
+          $col=3,
+          $min=0.0, $max=1000.0, $step=1,
+          $onSliderCellChanged=anghelos_slider_change]"/>
+		<!--start supply military-->
+        <signal_cue_instantly cue="md.Simple_Menu_API.Add_Row"/>
+        <signal_cue_instantly cue="md.Simple_Menu_API.Make_Text" param="table[
+          $col=1, $colSpan=2,$fontsize=9,
+		  $mouseOverText={104710471,4300},
+          $text={104710471,3013}]"/>
+        <signal_cue_instantly cue="md.Simple_Menu_API.Make_Slider" param="table[
+          $id='anghelos_supplied_militaryS',
+          $start=md.anghelos_sector_ruler_config.anghelos_config.$anghelos_supplied_militaryS,
+          $col=3,
+          $min=0.0, $max=100000.0, $step=1,
+          $onSliderCellChanged=anghelos_slider_change]"/>
+		<!--start supply miners-->
+        <signal_cue_instantly cue="md.Simple_Menu_API.Add_Row"/>
+        <signal_cue_instantly cue="md.Simple_Menu_API.Make_Text" param="table[
+          $col=1, $colSpan=2,$fontsize=9,
+		  $mouseOverText={104710471,4300},
+          $text={104710471,3014}]"/>
+        <signal_cue_instantly cue="md.Simple_Menu_API.Make_Slider" param="table[
+          $id='anghelos_supplied_minersS',
+          $start=md.anghelos_sector_ruler_config.anghelos_config.$anghelos_supplied_minersS,
+          $col=3,
+          $min=0.0, $max=100000.0, $step=1,
+          $onSliderCellChanged=anghelos_slider_change]"/>
+		<!--start supply traders-->
+        <signal_cue_instantly cue="md.Simple_Menu_API.Add_Row"/>
+        <signal_cue_instantly cue="md.Simple_Menu_API.Make_Text" param="table[
+          $col=1, $colSpan=2,$fontsize=9,
+		  $mouseOverText={104710471,4300},
+          $text={104710471,3015}]"/>
+        <signal_cue_instantly cue="md.Simple_Menu_API.Make_Slider" param="table[
+          $id='anghelos_supplied_tradersS',
+          $start=md.anghelos_sector_ruler_config.anghelos_config.$anghelos_supplied_tradersS,
+          $col=3,
+          $min=0.0, $max=100000.0, $step=1,
+          $onSliderCellChanged=anghelos_slider_change]"/>
+		<!--start supply scavengers-->
+        <signal_cue_instantly cue="md.Simple_Menu_API.Add_Row"/>
+        <signal_cue_instantly cue="md.Simple_Menu_API.Make_Text" param="table[
+          $col=1, $colSpan=2,$fontsize=9,
+		  $mouseOverText={104710471,4300},
+          $text={104710471,3016}]"/>
+        <signal_cue_instantly cue="md.Simple_Menu_API.Make_Slider" param="table[
+          $id='anghelos_supplied_scavengersS',
+          $start=md.anghelos_sector_ruler_config.anghelos_config.$anghelos_supplied_scavengersS,
+          $col=3,
+          $min=0.0, $max=100000.0, $step=1,
+          $onSliderCellChanged=anghelos_slider_change]"/>
+		<!--start supply utility (building, auxilliary ships and Teuta)-->
+        <signal_cue_instantly cue="md.Simple_Menu_API.Add_Row"/>
+        <signal_cue_instantly cue="md.Simple_Menu_API.Make_Text" param="table[
+          $col=1, $colSpan=2,$fontsize=9,
+		  $mouseOverText={104710471,4300},
+          $text={104710471,3017}]"/>
+        <signal_cue_instantly cue="md.Simple_Menu_API.Make_Slider" param="table[
+          $id='anghelos_supplied_utilityS',
+          $start=md.anghelos_sector_ruler_config.anghelos_config.$anghelos_supplied_utilityS,
+          $col=3,
+          $min=0.0, $max=100000.0, $step=1,
+          $onSliderCellChanged=anghelos_slider_change]"/>
+		<!--start supply building modules-->
+        <signal_cue_instantly cue="md.Simple_Menu_API.Add_Row"/>
+        <signal_cue_instantly cue="md.Simple_Menu_API.Make_Text" param="table[
+          $col=1, $colSpan=2,$fontsize=9,
+		  $mouseOverText={104710471,4300},
+          $text={104710471,3018}]"/>
+        <signal_cue_instantly cue="md.Simple_Menu_API.Make_Slider" param="table[
+          $id='anghelos_supplied_buildingS',
+          $start=md.anghelos_sector_ruler_config.anghelos_config.$anghelos_supplied_buildingS,
+          $col=3,
+          $min=0.0, $max=100000.0, $step=1,
+          $onSliderCellChanged=anghelos_slider_change]"/>
+		<!--start supply defence modules-->
+        <signal_cue_instantly cue="md.Simple_Menu_API.Add_Row"/>
+        <signal_cue_instantly cue="md.Simple_Menu_API.Make_Text" param="table[
+          $col=1, $colSpan=2,$fontsize=9,
+		  $mouseOverText={104710471,4300},
+          $text={104710471,3019}]"/>
+        <signal_cue_instantly cue="md.Simple_Menu_API.Make_Slider" param="table[
+          $id='anghelos_supplied_defenceS',
+          $start=md.anghelos_sector_ruler_config.anghelos_config.$anghelos_supplied_defenceS,
+          $col=3,
+          $min=0.0, $max=100000.0, $step=1,
+          $onSliderCellChanged=anghelos_slider_change]"/>
+      </actions>
+    </cue>
+	
+	<!-- Quick mod guide menu -->
+	<cue name="anghelos_build_guide_menu" instantiate="true" namespace="this">
+      <conditions>
+        <event_cue_signalled/>
+      </conditions>
+      <actions>		
+		<!-- supply guide -->
+        <signal_cue_instantly cue="md.Simple_Menu_API.Add_Row"/>
+        <signal_cue_instantly cue="md.Simple_Menu_API.Make_Text" param="table[
+          $col=1, $colSpan=3,
+          $font='Helper.standardFontBold',
+          $color='Helper.color.red', $titleColor='Helper.defaultSimpleBackgroundColor',
+          $text={104710471,8000}]"/>
+        <signal_cue_instantly cue="md.Simple_Menu_API.Add_Row"/>
+        <signal_cue_instantly cue="md.Simple_Menu_API.Make_Text" param="table[
+          $col=1, $colSpan=2,$fontsize=9,
+          $text={104710471,8001}]"/>
+		<signal_cue_instantly cue="md.Simple_Menu_API.Add_Row"/>
+        <signal_cue_instantly cue="md.Simple_Menu_API.Make_Text" param="table[
+          $col=1, $colSpan=2,$fontsize=9,
+          $text={104710471,80011}]"/>
+		 <signal_cue_instantly cue="md.Simple_Menu_API.Add_Row"/>
+        <signal_cue_instantly cue="md.Simple_Menu_API.Make_Text" param="table[
+          $col=1, $colSpan=2,$fontsize=9,
+          $text={104710471,8002}]"/>
+		<signal_cue_instantly cue="md.Simple_Menu_API.Add_Row"/>
+        <signal_cue_instantly cue="md.Simple_Menu_API.Make_Text" param="table[
+          $col=1, $colSpan=2,$fontsize=9,
+          $text={104710471,80022}]"/>
+		 <signal_cue_instantly cue="md.Simple_Menu_API.Add_Row"/>
+        <signal_cue_instantly cue="md.Simple_Menu_API.Make_Text" param="table[
+          $col=1, $colSpan=2,$fontsize=9,
+          $text={104710471,8006}]"/>
+		<signal_cue_instantly cue="md.Simple_Menu_API.Add_Row"/>
+        <signal_cue_instantly cue="md.Simple_Menu_API.Make_Text" param="table[
+          $col=1, $colSpan=2,$fontsize=9,
+          $text={104710471,80066}]"/>
+		<signal_cue_instantly cue="md.Simple_Menu_API.Add_Row"/>
+        <signal_cue_instantly cue="md.Simple_Menu_API.Make_Text" param="table[
+          $col=1, $colSpan=2,$fontsize=9,
+          $text={104710471,8003}]"/>
+		<signal_cue_instantly cue="md.Simple_Menu_API.Add_Row"/>
+        <signal_cue_instantly cue="md.Simple_Menu_API.Make_Text" param="table[
+          $col=1, $colSpan=2,$fontsize=9,
+          $text={104710471,80033}]"/>
+		<signal_cue_instantly cue="md.Simple_Menu_API.Add_Row"/>
+        <signal_cue_instantly cue="md.Simple_Menu_API.Make_Text" param="table[
+          $col=1, $colSpan=2,$fontsize=9,
+          $text={104710471,8004}]"/>
+		  <signal_cue_instantly cue="md.Simple_Menu_API.Add_Row"/>
+        <signal_cue_instantly cue="md.Simple_Menu_API.Make_Text" param="table[
+          $col=1, $colSpan=2,$fontsize=9,
+          $text={104710471,80044}]"/>
+		<signal_cue_instantly cue="md.Simple_Menu_API.Add_Row"/>
+        <signal_cue_instantly cue="md.Simple_Menu_API.Make_Text" param="table[
+          $col=1, $colSpan=2,$fontsize=9,
+          $text={104710471,8005}]"/>
+		<signal_cue_instantly cue="md.Simple_Menu_API.Add_Row"/>
+        <signal_cue_instantly cue="md.Simple_Menu_API.Make_Text" param="table[
+          $col=1, $colSpan=2,$fontsize=9,
+          $text={104710471,80055}]"/>
+		<!-- sector ownership guide -->
+		<signal_cue_instantly cue="md.Simple_Menu_API.Add_Row"/>
+        <signal_cue_instantly cue="md.Simple_Menu_API.Make_Text" param="table[
+          $col=1, $colSpan=3,
+          $font='Helper.standardFontBold',
+          $color='Helper.color.red', $titleColor='Helper.defaultSimpleBackgroundColor',
+          $text={104710471,8010}]"/>
+        <signal_cue_instantly cue="md.Simple_Menu_API.Add_Row"/>
+        <signal_cue_instantly cue="md.Simple_Menu_API.Make_Text" param="table[
+          $col=1, $colSpan=2,$fontsize=9,
+          $text={104710471,8011}]"/>
+		<signal_cue_instantly cue="md.Simple_Menu_API.Add_Row"/>
+        <signal_cue_instantly cue="md.Simple_Menu_API.Make_Text" param="table[
+          $col=1, $colSpan=2,$fontsize=9,
+          $text={104710471,8012}]"/>
+		<signal_cue_instantly cue="md.Simple_Menu_API.Add_Row"/>
+        <signal_cue_instantly cue="md.Simple_Menu_API.Make_Text" param="table[
+          $col=1, $colSpan=2,$fontsize=9,
+          $text={104710471,8013}]"/>
+		<signal_cue_instantly cue="md.Simple_Menu_API.Add_Row"/>
+        <signal_cue_instantly cue="md.Simple_Menu_API.Make_Text" param="table[
+          $col=1, $colSpan=2,$fontsize=9,
+          $text={104710471,8014}]"/>
+		<signal_cue_instantly cue="md.Simple_Menu_API.Add_Row"/>
+        <signal_cue_instantly cue="md.Simple_Menu_API.Make_Text" param="table[
+          $col=1, $colSpan=2,$fontsize=9,
+          $text={104710471,80144}]"/>
+		<!-- welfare modules guide -->
+		<signal_cue_instantly cue="md.Simple_Menu_API.Add_Row"/>
+        <signal_cue_instantly cue="md.Simple_Menu_API.Make_Text" param="table[
+          $col=1, $colSpan=3,
+          $font='Helper.standardFontBold',
+          $color='Helper.color.red', $titleColor='Helper.defaultSimpleBackgroundColor',
+          $text={104710471,8020}]"/>
+        <signal_cue_instantly cue="md.Simple_Menu_API.Add_Row"/>
+        <signal_cue_instantly cue="md.Simple_Menu_API.Make_Text" param="table[
+          $col=1, $colSpan=2,$fontsize=9,
+          $text={104710471,8021}]"/>
+		<signal_cue_instantly cue="md.Simple_Menu_API.Add_Row"/>
+        <signal_cue_instantly cue="md.Simple_Menu_API.Make_Text" param="table[
+          $col=1, $colSpan=2,$fontsize=9,
+          $text={104710471,8022}]"/>
+		<signal_cue_instantly cue="md.Simple_Menu_API.Add_Row"/>
+        <signal_cue_instantly cue="md.Simple_Menu_API.Make_Text" param="table[
+          $col=1, $colSpan=2,$fontsize=9,
+          $text={104710471,80222}]"/>
+		<signal_cue_instantly cue="md.Simple_Menu_API.Add_Row"/>
+        <signal_cue_instantly cue="md.Simple_Menu_API.Make_Text" param="table[
+          $col=1, $colSpan=2,$fontsize=9,
+          $text={104710471,8023}]"/>
+		<signal_cue_instantly cue="md.Simple_Menu_API.Add_Row"/>
+        <signal_cue_instantly cue="md.Simple_Menu_API.Make_Text" param="table[
+          $col=1, $colSpan=2,$fontsize=9,
+          $text={104710471,80233}]"/>
+		<!-- additional notes guide -->
+		<signal_cue_instantly cue="md.Simple_Menu_API.Add_Row"/>
+        <signal_cue_instantly cue="md.Simple_Menu_API.Make_Text" param="table[
+          $col=1, $colSpan=3,
+          $font='Helper.standardFontBold',
+          $color='Helper.color.red', $titleColor='Helper.defaultSimpleBackgroundColor',
+          $text={104710471,8030}]"/>
+        <signal_cue_instantly cue="md.Simple_Menu_API.Add_Row"/>
+        <signal_cue_instantly cue="md.Simple_Menu_API.Make_Text" param="table[
+          $col=1, $colSpan=2,$fontsize=9,
+          $text={104710471,8031}]"/>
+		<signal_cue_instantly cue="md.Simple_Menu_API.Add_Row"/>
+        <signal_cue_instantly cue="md.Simple_Menu_API.Make_Text" param="table[
+          $col=1, $colSpan=2,$fontsize=9,
+          $text={104710471,80311}]"/>
+		<signal_cue_instantly cue="md.Simple_Menu_API.Add_Row"/>
+        <signal_cue_instantly cue="md.Simple_Menu_API.Make_Text" param="table[
+          $col=1, $colSpan=2,$fontsize=9,
+          $text={104710471,8032}]"/>
+		<signal_cue_instantly cue="md.Simple_Menu_API.Add_Row"/>
+        <signal_cue_instantly cue="md.Simple_Menu_API.Make_Text" param="table[
+          $col=1, $colSpan=2,$fontsize=9,
+          $text={104710471,80322}]"/>
+      </actions>
+    </cue>
+	
+	<cue name="anghelos_slider_change" instantiate="true">
+		<conditions>
+			<event_cue_signalled/>
+		</conditions>
+		<actions>
+       		<set_value name="md.anghelos_sector_ruler_config.anghelos_config.{'$' + event.param.$id}" exact="event.param.$value"/>
+       	</actions>
+	</cue>
+	
+	<cue name="anghelos_save_change" instantiate="true">
+      <conditions>
+        <event_cue_signalled/>
+      </conditions>
+      <actions>
+		<set_value name="md.anghelos_sector_ruler_config.anghelos_config.{'$' + event.param.$id}" exact="event.param.$checked"/>
+      </actions>
+    </cue>
+  </cues>
+</mdscript>

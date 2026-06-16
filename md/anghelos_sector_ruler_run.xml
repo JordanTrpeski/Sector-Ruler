@@ -1,0 +1,792 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<mdscript name="anghelos_sector_ruler_run"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="md.xsd">
+  <cues>
+    <cue name="sec_rul_init" namespace="this" version="1">
+		<conditions>
+			<check_any>
+			  <event_universe_generated/>
+			</check_any>
+		</conditions>
+		<actions>
+			<set_value name="$timer_conf" exact="[player.age + 30s, 1min].max"/>
+			<set_value name="$sec_rul_last_run" exact="player.age"/>
+		</actions>
+		<cues>
+			<cue name="sec_rul_timer" instantiate="true" checkinterval="1min" checktime="$timer_conf">
+			  <conditions>
+				<check_value value="player.age ge ($sec_rul_last_run + ((md.anghelos_sector_ruler_config.anghelos_config.$anghelos_interval)min))"/>
+			  </conditions>
+			  <actions>
+				<set_value name="$sec_rul_last_run" exact="player.age"/>
+				<signal_cue_instantly cue="sec_rul_process"/>
+			  </actions>
+			</cue>
+			<cue name="sec_rul_process" instantiate="true" namespace="this">
+				<conditions>
+					<event_cue_signalled/>
+				</conditions>
+				<actions>					
+					<!--IMPORTANT VARIABLES-->
+					<find_sector name="$sectors_player" owner="faction.player" multiple="true"/>
+					<set_value name="$sector_tax_total" exact="(0)ct"/>
+					<set_value name="$workforce_tax_total" exact="(0)ct"/>
+					<set_value name="$workforce_total" exact="0.0"/>
+					<set_value name="$workforce_tax__welfare_total" exact="(0)ct"/>
+					<set_value name="$workforce_welfare_total" exact="0.0"/>
+					<set_value name="$build_modules_player" exact="[]"/>
+					<set_value name="$defence_modules_player" exact="[]"/>
+					
+					<!--Triggering emergency-->
+					<do_if value="([$sectors_player.count,0].max) gt md.anghelos_sector_ruler_config.anghelos_config.$anghelos_crysis">
+						<set_value name="md.anghelos_sector_ruler_config.anghelos_config.$point_of_no_return" exact="1"/>
+					</do_if>
+					
+					<!--Income from Sectors owned and worforce in owned stations in owned sectors-->
+					<do_if value="$sectors_player.count">
+						<set_value name="$sector_tax_total" exact="(($sectors_player.count * md.anghelos_sector_ruler_config.anghelos_config.$anghelos_sector_income)*100)ct "/>
+						<do_all exact="$sectors_player.count" counter="$i">
+							<set_value name="$sector" exact="$sectors_player.{$i}"/>
+							<find_station_by_true_owner name="$stations_player" recursive="true" multiple="true" space="$sector" faction="faction.player" known="true"/>
+							<do_if value="$stations_player.count">
+								<do_all exact="$stations_player.count" counter="$i">
+									<set_value name="$stations" exact="$stations_player.{$i}"/>
+									<set_value name="$workforce_tax_total" operation="add" exact="(($stations.workforce.amount * md.anghelos_sector_ruler_config.anghelos_config.$anghelos_workforce_income)*100)ct "/>
+									<set_value name="$workforce_total" operation="add" exact="$stations.workforce.amount"/>	
+								</do_all>
+							</do_if>
+						</do_all>
+					</do_if>
+					
+					<!--Sector Supply: balanced curved progression and prestige bonuses-->
+					<set_value name="$sector_count" exact="([$sectors_player.count,0].max)"/>
+					<set_value name="$fight_rank" exact="([stat.fight_rank,0].max)"/>
+					<set_value name="$trade_rank" exact="([stat.trade_rank,0].max)"/>
+					<set_value name="$defence_rank_bonus" exact="0"/>
+					<do_if value="$fight_rank ge 3"><set_value name="$defence_rank_bonus" operation="add" exact="1"/></do_if>
+					<do_if value="$fight_rank ge 6"><set_value name="$defence_rank_bonus" operation="add" exact="1"/></do_if>
+					<do_if value="$fight_rank ge 9"><set_value name="$defence_rank_bonus" operation="add" exact="1"/></do_if>
+					<do_if value="$fight_rank ge 12"><set_value name="$defence_rank_bonus" operation="add" exact="1"/></do_if>
+					<do_if value="$fight_rank ge 15"><set_value name="$defence_rank_bonus" operation="add" exact="1"/></do_if>
+					<do_if value="$fight_rank ge 18"><set_value name="$defence_rank_bonus" operation="add" exact="1"/></do_if>
+					<do_if value="$fight_rank ge 21"><set_value name="$defence_rank_bonus" operation="add" exact="1"/></do_if>
+					<do_if value="$fight_rank ge 24"><set_value name="$defence_rank_bonus" operation="add" exact="1"/></do_if>
+					<do_if value="$fight_rank ge 27"><set_value name="$defence_rank_bonus" operation="add" exact="1"/></do_if>
+					<do_if value="$fight_rank ge 30"><set_value name="$defence_rank_bonus" operation="add" exact="1"/></do_if>
+					<set_value name="$utility_rank_bonus" exact="0"/>
+					<do_if value="($trade_rank + $fight_rank) ge 10"><set_value name="$utility_rank_bonus" operation="add" exact="1"/></do_if>
+					<do_if value="($trade_rank + $fight_rank) ge 20"><set_value name="$utility_rank_bonus" operation="add" exact="1"/></do_if>
+					<do_if value="($trade_rank + $fight_rank) ge 30"><set_value name="$utility_rank_bonus" operation="add" exact="1"/></do_if>
+					<do_if value="($trade_rank + $fight_rank) ge 40"><set_value name="$utility_rank_bonus" operation="add" exact="1"/></do_if>
+					<do_if value="($trade_rank + $fight_rank) ge 50"><set_value name="$utility_rank_bonus" operation="add" exact="1"/></do_if>
+					<do_if value="($trade_rank + $fight_rank) ge 60"><set_value name="$utility_rank_bonus" operation="add" exact="1"/></do_if>
+					<set_value name="$scavenger_rank_bonus" exact="0"/>
+					<do_if value="$trade_rank ge 5"><set_value name="$scavenger_rank_bonus" operation="add" exact="1"/></do_if>
+					<do_if value="$trade_rank ge 10"><set_value name="$scavenger_rank_bonus" operation="add" exact="1"/></do_if>
+					<do_if value="$trade_rank ge 15"><set_value name="$scavenger_rank_bonus" operation="add" exact="1"/></do_if>
+					<do_if value="$trade_rank ge 20"><set_value name="$scavenger_rank_bonus" operation="add" exact="1"/></do_if>
+					<do_if value="$trade_rank ge 25"><set_value name="$scavenger_rank_bonus" operation="add" exact="1"/></do_if>
+					<do_if value="$trade_rank ge 30"><set_value name="$scavenger_rank_bonus" operation="add" exact="1"/></do_if>
+
+					<set_value name="$supplied_military_actual" exact="180 + $fight_rank"/>
+					<do_if value="$sector_count == 1"><set_value name="$supplied_military_actual" exact="230 + $fight_rank"/></do_if>
+					<do_elseif value="$sector_count == 2"><set_value name="$supplied_military_actual" exact="290 + $fight_rank"/></do_elseif>
+					<do_elseif value="$sector_count == 3"><set_value name="$supplied_military_actual" exact="365 + $fight_rank"/></do_elseif>
+					<do_elseif value="$sector_count == 4"><set_value name="$supplied_military_actual" exact="455 + $fight_rank"/></do_elseif>
+					<do_elseif value="$sector_count == 5"><set_value name="$supplied_military_actual" exact="555 + $fight_rank"/></do_elseif>
+					<do_elseif value="$sector_count == 6"><set_value name="$supplied_military_actual" exact="640 + $fight_rank"/></do_elseif>
+					<do_elseif value="$sector_count == 7"><set_value name="$supplied_military_actual" exact="715 + $fight_rank"/></do_elseif>
+					<do_elseif value="$sector_count == 8"><set_value name="$supplied_military_actual" exact="780 + $fight_rank"/></do_elseif>
+					<do_elseif value="$sector_count == 9"><set_value name="$supplied_military_actual" exact="840 + $fight_rank"/></do_elseif>
+					<do_elseif value="$sector_count gt 9"><set_value name="$supplied_military_actual" exact="840 + (($sector_count - 9) * 50) + $fight_rank"/></do_elseif>
+
+					<set_value name="$supplied_miners_actual" exact="120 + $trade_rank"/>
+					<do_if value="$sector_count == 1"><set_value name="$supplied_miners_actual" exact="154 + $trade_rank"/></do_if>
+					<do_elseif value="$sector_count == 2"><set_value name="$supplied_miners_actual" exact="196 + $trade_rank"/></do_elseif>
+					<do_elseif value="$sector_count == 3"><set_value name="$supplied_miners_actual" exact="250 + $trade_rank"/></do_elseif>
+					<do_elseif value="$sector_count == 4"><set_value name="$supplied_miners_actual" exact="316 + $trade_rank"/></do_elseif>
+					<do_elseif value="$sector_count == 5"><set_value name="$supplied_miners_actual" exact="390 + $trade_rank"/></do_elseif>
+					<do_elseif value="$sector_count == 6"><set_value name="$supplied_miners_actual" exact="454 + $trade_rank"/></do_elseif>
+					<do_elseif value="$sector_count == 7"><set_value name="$supplied_miners_actual" exact="510 + $trade_rank"/></do_elseif>
+					<do_elseif value="$sector_count == 8"><set_value name="$supplied_miners_actual" exact="558 + $trade_rank"/></do_elseif>
+					<do_elseif value="$sector_count == 9"><set_value name="$supplied_miners_actual" exact="600 + $trade_rank"/></do_elseif>
+					<do_elseif value="$sector_count gt 9"><set_value name="$supplied_miners_actual" exact="600 + (($sector_count - 9) * 32) + $trade_rank"/></do_elseif>
+
+					<set_value name="$supplied_traders_actual" exact="72 + $trade_rank"/>
+					<do_if value="$sector_count == 1"><set_value name="$supplied_traders_actual" exact="94 + $trade_rank"/></do_if>
+					<do_elseif value="$sector_count == 2"><set_value name="$supplied_traders_actual" exact="122 + $trade_rank"/></do_elseif>
+					<do_elseif value="$sector_count == 3"><set_value name="$supplied_traders_actual" exact="158 + $trade_rank"/></do_elseif>
+					<do_elseif value="$sector_count == 4"><set_value name="$supplied_traders_actual" exact="204 + $trade_rank"/></do_elseif>
+					<do_elseif value="$sector_count == 5"><set_value name="$supplied_traders_actual" exact="254 + $trade_rank"/></do_elseif>
+					<do_elseif value="$sector_count == 6"><set_value name="$supplied_traders_actual" exact="298 + $trade_rank"/></do_elseif>
+					<do_elseif value="$sector_count == 7"><set_value name="$supplied_traders_actual" exact="336 + $trade_rank"/></do_elseif>
+					<do_elseif value="$sector_count == 8"><set_value name="$supplied_traders_actual" exact="370 + $trade_rank"/></do_elseif>
+					<do_elseif value="$sector_count == 9"><set_value name="$supplied_traders_actual" exact="400 + $trade_rank"/></do_elseif>
+					<do_elseif value="$sector_count gt 9"><set_value name="$supplied_traders_actual" exact="400 + (($sector_count - 9) * 22) + $trade_rank"/></do_elseif>
+
+					<set_value name="$supplied_scavengers_actual" exact="(md.anghelos_sector_ruler_config.anghelos_config.$anghelos_supplied_scavengers * $sector_count)+ md.anghelos_sector_ruler_config.anghelos_config.$anghelos_supplied_scavengersS + $scavenger_rank_bonus"/>
+					<set_value name="$supplied_builders_actual" exact="(md.anghelos_sector_ruler_config.anghelos_config.$anghelos_supplied_utility * $sector_count)+ md.anghelos_sector_ruler_config.anghelos_config.$anghelos_supplied_utilityS + $utility_rank_bonus"/>
+					<set_value name="$supplied_defence_modules_actual" exact="(md.anghelos_sector_ruler_config.anghelos_config.$anghelos_supplied_defence * $sector_count)+ md.anghelos_sector_ruler_config.anghelos_config.$anghelos_supplied_defenceS + $defence_rank_bonus"/>
+					<set_value name="$supplied_build_modules_actual" exact="(md.anghelos_sector_ruler_config.anghelos_config.$anghelos_supplied_building * $sector_count) + md.anghelos_sector_ruler_config.anghelos_config.$anghelos_supplied_buildingS"/>
+
+					<set_value name="$war_threshold_actual" exact="150"/>
+					<do_if value="$sector_count == 1"><set_value name="$war_threshold_actual" exact="185"/></do_if>
+					<do_elseif value="$sector_count == 2"><set_value name="$war_threshold_actual" exact="220"/></do_elseif>
+					<do_elseif value="$sector_count == 3"><set_value name="$war_threshold_actual" exact="262"/></do_elseif>
+					<do_elseif value="$sector_count == 4"><set_value name="$war_threshold_actual" exact="304"/></do_elseif>
+					<do_elseif value="$sector_count == 5"><set_value name="$war_threshold_actual" exact="353"/></do_elseif>
+					<do_elseif value="$sector_count == 6"><set_value name="$war_threshold_actual" exact="388"/></do_elseif>
+					<do_elseif value="$sector_count == 7"><set_value name="$war_threshold_actual" exact="416"/></do_elseif>
+					<do_elseif value="$sector_count == 8"><set_value name="$war_threshold_actual" exact="437"/></do_elseif>
+					<do_elseif value="$sector_count == 9"><set_value name="$war_threshold_actual" exact="451"/></do_elseif>
+					<do_elseif value="$sector_count gt 9"><set_value name="$war_threshold_actual" exact="451"/></do_elseif>
+					
+					
+					<!--Military count-->
+					<find_ship_by_true_owner name="$XLShipss" multiple="true" checkoperational="true" masstraffic="false" unit="false" class="class.ship_xl" primarypurpose="purpose.fight" space="player.galaxy" faction="faction.player" recursive="true"/>
+					<find_ship_by_true_owner name="$XLDockedShipss" multiple="true" checkoperational="true" masstraffic="false" unit="false" class="class.ship_xl" primarypurpose="purpose.fight" space="player.galaxy" faction="faction.player" docked="true" recursive="true"/>
+					<remove_from_list name="$XLDockedShipss" list="$XLShipss" multiple="true"/>
+					<append_list_elements name="$XLShipss" other="$XLDockedShipss"/>
+					<find_ship_by_true_owner name="$LShipss" multiple="true" checkoperational="true" masstraffic="false" unit="false" class="class.ship_l" primarypurpose="purpose.fight" space="player.galaxy" faction="faction.player" recursive="true"/>
+					<find_ship_by_true_owner name="$LDockedShipss" multiple="true" checkoperational="true" masstraffic="false" unit="false" class="class.ship_l" primarypurpose="purpose.fight" space="player.galaxy" faction="faction.player" docked="true" recursive="true"/>
+					<remove_from_list name="$LDockedShipss" list="$LShipss" multiple="true"/>
+					<append_list_elements name="$LShipss" other="$LDockedShipss"/>
+					<find_ship_by_true_owner name="$MShipss" multiple="true" checkoperational="true" masstraffic="false" unit="false" class="class.ship_m" primarypurpose="purpose.fight" space="player.galaxy" faction="faction.player" recursive="true"/>
+					<find_ship_by_true_owner name="$MDockedShipss" multiple="true" checkoperational="true" masstraffic="false" unit="false" class="class.ship_m" primarypurpose="purpose.fight" space="player.galaxy" faction="faction.player" docked="true" recursive="true"/>
+					<remove_from_list name="$MDockedShipss" list="$MShipss" multiple="true"/>
+					<append_list_elements name="$MShipss" other="$MDockedShipss"/>
+					<find_ship_by_true_owner name="$SShipss" multiple="true" checkoperational="true" masstraffic="false" unit="false" class="class.ship_s" primarypurpose="purpose.fight" space="player.galaxy" faction="faction.player" recursive="true"/>
+					<find_ship_by_true_owner name="$SDockedShipss" multiple="true" checkoperational="true" masstraffic="false" unit="false" class="class.ship_s" primarypurpose="purpose.fight" space="player.galaxy" faction="faction.player" docked="true" recursive="true"/>
+					<remove_from_list name="$SDockedShipss" list="$SShipss" multiple="true"/>
+					<append_list_elements name="$SShipss" other="$SDockedShipss"/>
+					<set_value name="$TotalShipss" exact="(([$XLShipss.count,0].max) * 21) + (([$LShipss.count,0].max) * 9) + (([$MShipss.count,0].max) * 3) + ([$SShipss.count,0].max)"/>					
+					
+					<!--Trader count-->
+					<find_ship_by_true_owner name="$TraderLShipss" multiple="true" checkoperational="true" masstraffic="false" unit="false" class="class.ship_l" primarypurpose="purpose.trade" space="player.galaxy" faction="faction.player" recursive="true"/>
+					<find_ship_by_true_owner name="$TraderLDockedShipss" multiple="true" checkoperational="true" masstraffic="false" unit="false" class="class.ship_l" primarypurpose="purpose.trade" space="player.galaxy" faction="faction.player" docked="true" recursive="true"/>
+					<remove_from_list name="$TraderLDockedShipss" list="$TraderLShipss" multiple="true"/>
+					<append_list_elements name="$TraderLShipss" other="$TraderLDockedShipss"/>
+					<find_ship_by_true_owner name="$TraderMShipss" multiple="true" checkoperational="true" masstraffic="false" unit="false" class="class.ship_m" primarypurpose="purpose.trade" space="player.galaxy" faction="faction.player" recursive="true"/>
+					<find_ship_by_true_owner name="$TraderMDockedShipss" multiple="true" checkoperational="true" masstraffic="false" unit="false" class="class.ship_m" primarypurpose="purpose.trade" space="player.galaxy" faction="faction.player" docked="true" recursive="true"/>
+					<remove_from_list name="$TraderMDockedShipss" list="$TraderMShipss" multiple="true"/>
+					<append_list_elements name="$TraderMShipss" other="$TraderMDockedShipss"/>
+					<find_ship_by_true_owner name="$TraderSShipss" multiple="true" checkoperational="true" masstraffic="false" unit="false" class="class.ship_s" primarypurpose="purpose.trade" space="player.galaxy" faction="faction.player" recursive="true"/>
+					<find_ship_by_true_owner name="$TraderSDockedShipss" multiple="true" checkoperational="true" masstraffic="false" unit="false" class="class.ship_s" primarypurpose="purpose.trade" space="player.galaxy" faction="faction.player" docked="true" recursive="true"/>
+					<remove_from_list name="$TraderSDockedShipss" list="$TraderSShipss" multiple="true"/>
+					<append_list_elements name="$TraderSShipss" other="$TraderSDockedShipss"/>
+					<set_value name="$TraderTotalShipss" exact="(([$TraderLShipss.count,0].max) * 9) + (([$TraderMShipss.count,0].max) * 3) + ([$TraderSShipss.count,0].max)"/>					
+					
+					<!--Miner count-->
+					<find_ship_by_true_owner name="$MinerLShipss" multiple="true" checkoperational="true" masstraffic="false" unit="false" class="class.ship_l" primarypurpose="purpose.mine" space="player.galaxy" faction="faction.player" recursive="true"/>
+					<find_ship_by_true_owner name="$MinerLDockedShipss" multiple="true" checkoperational="true" masstraffic="false" unit="false" class="class.ship_l" primarypurpose="purpose.mine" space="player.galaxy" faction="faction.player" docked="true" recursive="true"/>
+					<remove_from_list name="$MinerLDockedShipss" list="$MinerLShipss" multiple="true"/>
+					<append_list_elements name="$MinerLShipss" other="$MinerLDockedShipss"/>
+					<find_ship_by_true_owner name="$MinerMShipss" multiple="true" checkoperational="true" masstraffic="false" unit="false" class="class.ship_m" primarypurpose="purpose.mine" space="player.galaxy" faction="faction.player" recursive="true"/>
+					<find_ship_by_true_owner name="$MinerMDockedShipss" multiple="true" checkoperational="true" masstraffic="false" unit="false" class="class.ship_m" primarypurpose="purpose.mine" space="player.galaxy" faction="faction.player" docked="true" recursive="true"/>
+					<remove_from_list name="$MinerMDockedShipss" list="$MinerMShipss" multiple="true"/>
+					<append_list_elements name="$MinerMShipss" other="$MinerMDockedShipss"/>
+					<find_ship_by_true_owner name="$MinerSShipss" multiple="true" checkoperational="true" masstraffic="false" unit="false" class="class.ship_s" primarypurpose="purpose.mine" space="player.galaxy" faction="faction.player" recursive="true"/>
+					<find_ship_by_true_owner name="$MinerSDockedShipss" multiple="true" checkoperational="true" masstraffic="false" unit="false" class="class.ship_s" primarypurpose="purpose.mine" space="player.galaxy" faction="faction.player" docked="true" recursive="true"/>
+					<remove_from_list name="$MinerSDockedShipss" list="$MinerSShipss" multiple="true"/>
+					<append_list_elements name="$MinerSShipss" other="$MinerSDockedShipss"/>
+					<set_value name="$MinerTotalShipss" exact="(([$MinerLShipss.count,0].max) * 9) + (([$MinerMShipss.count,0].max) * 3) + ([$MinerSShipss.count,0].max)"/>
+					
+					<!--scavenger count-->
+					<find_ship_by_true_owner name="$ScavengerMShipss" multiple="true" checkoperational="true" masstraffic="false" unit="false" class="class.ship_m" primarypurpose="purpose.salvage" space="player.galaxy" faction="faction.player" recursive="true"/>
+					<find_ship_by_true_owner name="$ScavengerMDockedShipss" multiple="true" checkoperational="true" masstraffic="false" unit="false" class="class.ship_m" primarypurpose="purpose.salvage" space="player.galaxy" faction="faction.player" docked="true" recursive="true"/>
+					<remove_from_list name="$ScavengerMDockedShipss" list="$ScavengerMShipss" multiple="true"/>
+					<append_list_elements name="$ScavengerMShipss" other="$ScavengerMDockedShipss"/>
+					
+					<!--builder count-->
+					<find_ship_by_true_owner name="$BuilderXLShipss" multiple="true" checkoperational="true" masstraffic="false" unit="false" class="class.ship_xl" space="player.galaxy" faction="faction.player" recursive="true">
+						<match_any>
+							<match primarypurpose="purpose.build"/>
+							<match primarypurpose="purpose.auxiliary"/>
+						</match_any>
+					</find_ship_by_true_owner>
+					<find_ship_by_true_owner name="$BuilderXLDockedShipss" multiple="true" checkoperational="true" masstraffic="false" unit="false" class="class.ship_xl" space="player.galaxy" faction="faction.player" docked="true" recursive="true">
+						<match_any>
+							<match primarypurpose="purpose.build"/>
+							<match primarypurpose="purpose.auxiliary"/>
+						</match_any>
+					</find_ship_by_true_owner>
+					<remove_from_list name="$BuilderXLDockedShipss" list="$BuilderXLShipss" multiple="true"/>
+					<append_list_elements name="$BuilderXLShipss" other="$BuilderXLDockedShipss"/>
+					<find_ship_by_true_owner name="$BuilderLShipss" multiple="true" checkoperational="true" masstraffic="false" unit="false" class="class.ship_l" primarypurpose="purpose.dismantling" space="player.galaxy" faction="faction.player" recursive="true"/>
+					<find_ship_by_true_owner name="$BuilderLDockedShipss" multiple="true" checkoperational="true" masstraffic="false" unit="false" class="class.ship_l" primarypurpose="purpose.dismantling" space="player.galaxy" faction="faction.player" docked="true" recursive="true"/>
+					<remove_from_list name="$BuilderLDockedShipss" list="$BuilderLShipss" multiple="true"/>
+					<append_list_elements name="$BuilderLShipss" other="$BuilderLDockedShipss"/>
+					<set_value name="$BuilderTotalShipss" exact="(([$BuilderXLShipss.count,0].max) + ([$BuilderLShipss.count,0].max))"/>
+					
+					<!--ship building and defence modules count-->
+					<find_station_by_true_owner name="$stations_player_all" recursive="true" multiple="true" space="player.galaxy" faction="faction.player" known="true"/>
+					<do_if value="$stations_player_all.count">
+						<do_all exact="$stations_player_all.count" counter="$i">
+							<set_value name="$stations_all" exact="$stations_player_all.{$i}"/>
+							<set_value name="$stations_all_build_modules" exact="$stations_all.buildmodules"/>
+							<set_value name="$stations_all_defence_modules" exact="$stations_all.defencemodules"/>
+							<append_list_elements name="$build_modules_player" other="$stations_all_build_modules"/>
+							<append_list_elements name="$defence_modules_player" other="$stations_all_defence_modules"/>
+							<do_if value="$stations_all.welfaremodules.count">
+								<set_value name="$workforce_tax__welfare_total" operation="add" exact="(($stations_all.workforce.amount * md.anghelos_sector_ruler_config.anghelos_config.$anghelos_workforce_welfare_income)*100)ct "/>
+								<set_value name="$workforce_welfare_total" operation="add" exact="$stations_all.workforce.amount"/>	
+							</do_if>
+						</do_all>
+					</do_if>
+					
+					<!--notification Output-->
+					<set_value name="$ticker_message" exact="{104710471,1010} + ($sector_tax_total + $workforce_tax_total +$workforce_tax__welfare_total).formatted.{'%s%Cr'} "/>
+					<set_value name="$ticker_message" operation="add" exact=" '\n' + {104710471,1020} "/>	
+					<!--logbook Output-->
+					<set_value name="$logbook_message" exact="{104710471,2010} + ([$sectors_player.count,0].max) "/>	
+					<set_value name="$logbook_message" operation="add" exact=" '\n' + {104710471,2030} + $sector_tax_total.formatted.{'%s%Cr'} "/>
+					<set_value name="$logbook_message" operation="add" exact=" '\n' + {104710471,2020} + $workforce_total "/>
+					<set_value name="$logbook_message" operation="add" exact=" '\n' + {104710471,2040} + $workforce_tax_total.formatted.{'%s%Cr'} "/>
+					<set_value name="$logbook_message" operation="add" exact=" '\n' + {104710471,2300} + $workforce_welfare_total "/>
+					<set_value name="$logbook_message" operation="add" exact=" '\n' + {104710471,2400} + $workforce_tax__welfare_total.formatted.{'%s%Cr'} "/>
+					<set_value name="$logbook_message" operation="add" exact=" '\n' + {104710471,2050} + $TotalShipss + {104710471,2051} + $supplied_military_actual + {104710471,2500} + $war_threshold_actual "/> 
+					<set_value name="$logbook_message" operation="add" exact=" '\n' + {104710471,2052} + ([$XLShipss.count,0].max) "/>
+					<set_value name="$logbook_message" operation="add" exact=" '\n' + {104710471,2053} + ([$LShipss.count,0].max) "/>
+					<set_value name="$logbook_message" operation="add" exact=" '\n' + {104710471,2054} + ([$MShipss.count,0].max) "/>
+					<set_value name="$logbook_message" operation="add" exact=" '\n' + {104710471,2055} + ([$SShipss.count,0].max) "/>
+					<set_value name="$logbook_message" operation="add" exact=" '\n' + {104710471,2060} + $MinerTotalShipss + {104710471,2051} + $supplied_miners_actual "/>
+					<set_value name="$logbook_message" operation="add" exact=" '\n' + {104710471,2053} + ([$MinerLShipss.count,0].max) "/>
+					<set_value name="$logbook_message" operation="add" exact=" '\n' + {104710471,2054} + ([$MinerMShipss.count,0].max) "/>
+					<set_value name="$logbook_message" operation="add" exact=" '\n' + {104710471,2055} + ([$MinerSShipss.count,0].max) "/>
+					<set_value name="$logbook_message" operation="add" exact=" '\n' + {104710471,2070} + $TraderTotalShipss + {104710471,2051} + $supplied_traders_actual "/>
+					<set_value name="$logbook_message" operation="add" exact=" '\n' + {104710471,2053} + ([$TraderLShipss.count,0].max) "/>
+					<set_value name="$logbook_message" operation="add" exact=" '\n' + {104710471,2054} + ([$TraderMShipss.count,0].max) "/>
+					<set_value name="$logbook_message" operation="add" exact=" '\n' + {104710471,2055} + ([$TraderSShipss.count,0].max) "/>
+					<set_value name="$logbook_message" operation="add" exact=" '\n' + {104710471,2090} + $BuilderTotalShipss + {104710471,2051} + $supplied_builders_actual "/>
+					<set_value name="$logbook_message" operation="add" exact=" '\n' + {104710471,2091} + ([$BuilderXLShipss.count,0].max) "/>
+					<set_value name="$logbook_message" operation="add" exact=" '\n' + {104710471,2092} + ([$BuilderLShipss.count,0].max) "/>
+					<set_value name="$logbook_message" operation="add" exact=" '\n' + {104710471,2080} + ([$ScavengerMShipss.count,0].max) + {104710471,2051} + $supplied_scavengers_actual"/>
+					<set_value name="$logbook_message" operation="add" exact=" '\n' + {104710471,2100} + ([$build_modules_player.count,0].max) + {104710471,2051} + $supplied_build_modules_actual"/>
+					<set_value name="$logbook_message" operation="add" exact=" '\n' + {104710471,2200} + ([$defence_modules_player.count,0].max) + {104710471,2051} + $supplied_defence_modules_actual"/>
+					
+					<set_value name="$no_warning" exact="0"/>
+					
+					<!--CONSEQUENCES-->
+					<!--CONSEQUENCES: Surpassing military supply (Loose ship, starting from XL)-->
+					<do_if value="$TotalShipss gt $supplied_military_actual">
+						<set_value name="$ticker_message" operation="add" exact=" '\n' + {104710471,6020} "/>	
+						<set_value name="$logbook_message" operation="add" exact=" '\n' + {104710471,6020} "/>
+						<set_value name="$no_warning"  exact="1"/>
+						<do_if value="([$XLShipss.count,0].max) gt 0">
+							<destroy_object object="$XLShipss.{1}" explosion="true"/>							
+						</do_if>
+						<do_elseif value="([$LShipss.count,0].max) gt 0">
+							<destroy_object object="$LShipss.{1}" explosion="true"/>
+						</do_elseif>
+						<do_elseif value="([$MShipss.count,0].max) gt 3">
+							<destroy_object object="$MShipss.{1}" explosion="true"/>
+							<destroy_object object="$MShipss.{2}" explosion="true"/>
+							<destroy_object object="$MShipss.{3}" explosion="true"/>
+							<destroy_object object="$MShipss.{4}" explosion="true"/>
+						</do_elseif>
+						<do_elseif value="([$MShipss.count,0].max) gt 2">
+							<destroy_object object="$MShipss.{1}" explosion="true"/>
+							<destroy_object object="$MShipss.{2}" explosion="true"/>
+							<destroy_object object="$MShipss.{3}" explosion="true"/>
+						</do_elseif>
+						<do_elseif value="([$MShipss.count,0].max) gt 1">
+							<destroy_object object="$MShipss.{1}" explosion="true"/>
+							<destroy_object object="$MShipss.{2}" explosion="true"/>
+						</do_elseif>
+						<do_elseif value="([$MShipss.count,0].max) gt 0">
+							<destroy_object object="$MShipss.{1}" explosion="true"/>
+						</do_elseif>
+						<do_else>
+							<destroy_object object="$SShipss.{1}" explosion="true"/>
+							<destroy_object object="$SShipss.{2}" explosion="true"/>
+							<destroy_object object="$SShipss.{3}" explosion="true"/>
+							<destroy_object object="$SShipss.{4}" explosion="true"/>
+							<destroy_object object="$SShipss.{5}" explosion="true"/>
+							<destroy_object object="$SShipss.{6}" explosion="true"/>
+							<destroy_object object="$SShipss.{7}" explosion="true"/>
+							<destroy_object object="$SShipss.{8}" explosion="true"/>
+							<destroy_object object="$SShipss.{9}" explosion="true"/>
+						</do_else>
+						
+					</do_if>
+					
+					<!--CONSEQUENCES: Surpassing miner supply (Loose ship, starting from L)-->
+					<do_if value="$MinerTotalShipss gt $supplied_miners_actual">
+						<set_value name="$ticker_message" operation="add" exact=" '\n' + {104710471,6030} "/>	
+						<set_value name="$logbook_message" operation="add" exact=" '\n' + {104710471,6030} "/>
+						<set_value name="$no_warning"  exact="1"/>
+						<do_if value="([$MinerLShipss.count,0].max) gt 0">
+							<destroy_object object="$MinerLShipss.{1}" explosion="true"/>
+						</do_if>
+						<do_elseif value="([$MinerMShipss.count,0].max) gt 3">
+							<destroy_object object="$MinerMShipss.{1}" explosion="true"/>
+							<destroy_object object="$MinerMShipss.{2}" explosion="true"/>
+							<destroy_object object="$MinerMShipss.{3}" explosion="true"/>
+							<destroy_object object="$MinerMShipss.{4}" explosion="true"/>
+						</do_elseif>
+						<do_elseif value="([$MinerMShipss.count,0].max) gt 2">
+							<destroy_object object="$MinerMShipss.{1}" explosion="true"/>
+							<destroy_object object="$MinerMShipss.{2}" explosion="true"/>
+							<destroy_object object="$MinerMShipss.{3}" explosion="true"/>
+						</do_elseif>
+						<do_elseif value="([$MinerMShipss.count,0].max) gt 1">
+							<destroy_object object="$MinerMShipss.{1}" explosion="true"/>
+							<destroy_object object="$MinerMShipss.{2}" explosion="true"/>
+						</do_elseif>
+						<do_elseif value="([$MinerMShipss.count,0].max) gt 0">
+							<destroy_object object="$MinerMShipss.{1}" explosion="true"/>
+						</do_elseif>
+						<do_else>
+							<destroy_object object="$MinerSShipss.{1}" explosion="true"/>
+							<destroy_object object="$MinerSShipss.{2}" explosion="true"/>
+							<destroy_object object="$MinerSShipss.{3}" explosion="true"/>
+							<destroy_object object="$MinerSShipss.{4}" explosion="true"/>
+							<destroy_object object="$MinerSShipss.{5}" explosion="true"/>
+							<destroy_object object="$MinerSShipss.{6}" explosion="true"/>
+							<destroy_object object="$MinerSShipss.{7}" explosion="true"/>
+							<destroy_object object="$MinerSShipss.{8}" explosion="true"/>
+							<destroy_object object="$MinerSShipss.{9}" explosion="true"/>
+						</do_else>						
+					</do_if>
+					
+					<!--CONSEQUENCES: Surpassing trader supply (Loose ship, starting from L)-->
+					<do_if value="$TraderTotalShipss gt $supplied_traders_actual">
+						<set_value name="$ticker_message" operation="add" exact=" '\n' + {104710471,6040} "/>	
+						<set_value name="$logbook_message" operation="add" exact=" '\n' + {104710471,6040} "/>
+						<set_value name="$no_warning"  exact="1"/>
+						<do_if value="([$TraderLShipss.count,0].max) gt 0">
+							<destroy_object object="$TraderLShipss.{1}" explosion="true"/>
+						</do_if>
+						<do_elseif value="([$TraderMShipss.count,0].max) gt 3">
+							<destroy_object object="$TraderMShipss.{1}" explosion="true"/>
+							<destroy_object object="$TraderMShipss.{2}" explosion="true"/>
+							<destroy_object object="$TraderMShipss.{3}" explosion="true"/>
+							<destroy_object object="$TraderMShipss.{4}" explosion="true"/>
+						</do_elseif>
+						<do_elseif value="([$TraderMShipss.count,0].max) gt 2">
+							<destroy_object object="$TraderMShipss.{1}" explosion="true"/>
+							<destroy_object object="$TraderMShipss.{2}" explosion="true"/>
+							<destroy_object object="$TraderMShipss.{3}" explosion="true"/>
+						</do_elseif>
+						<do_elseif value="([$TraderMShipss.count,0].max) gt 1">
+							<destroy_object object="$TraderMShipss.{1}" explosion="true"/>
+							<destroy_object object="$TraderMShipss.{2}" explosion="true"/>
+						</do_elseif>
+						<do_elseif value="([$TraderMShipss.count,0].max) gt 0">
+							<destroy_object object="$TraderMShipss.{1}" explosion="true"/>
+						</do_elseif>
+						<do_else>
+							<destroy_object object="$TraderSShipss.{1}" explosion="true"/>
+							<destroy_object object="$TraderSShipss.{2}" explosion="true"/>
+							<destroy_object object="$TraderSShipss.{3}" explosion="true"/>
+							<destroy_object object="$TraderSShipss.{4}" explosion="true"/>
+							<destroy_object object="$TraderSShipss.{5}" explosion="true"/>
+							<destroy_object object="$TraderSShipss.{6}" explosion="true"/>
+							<destroy_object object="$TraderSShipss.{7}" explosion="true"/>
+							<destroy_object object="$TraderSShipss.{8}" explosion="true"/>
+							<destroy_object object="$TraderSShipss.{9}" explosion="true"/>
+						</do_else>						
+					</do_if>
+					
+					<!--CONSEQUENCES: Surpassing utility supply (Loose ship, starting from XL)-->
+					<do_if value="$BuilderTotalShipss gt $supplied_builders_actual">
+						<set_value name="$ticker_message" operation="add" exact=" '\n' + {104710471,6050} "/>	
+						<set_value name="$logbook_message" operation="add" exact=" '\n' + {104710471,6050} "/>
+						<set_value name="$no_warning"  exact="1"/>
+						<do_if value="([$BuilderXLShipss.count,0].max) gt 0">
+							<destroy_object object="$BuilderXLShipss.{1}" explosion="true"/>						
+						</do_if>
+						<do_else>
+							<destroy_object object="$BuilderLShipss.{1}" explosion="true"/>
+						</do_else>						
+					</do_if>
+					
+					<!--CONSEQUENCES: Surpassing scavenger supply (Loose a manticore ship)-->
+					<do_if value="([$ScavengerMShipss.count,0].max) gt $supplied_scavengers_actual">
+						<set_value name="$ticker_message" operation="add" exact=" '\n' + {104710471,6060} "/>	
+						<set_value name="$logbook_message" operation="add" exact=" '\n' + {104710471,6060} "/>
+						<set_value name="$no_warning"  exact="1"/>
+						<destroy_object object="$ScavengerMShipss.{1}" explosion="true"/>				
+					</do_if>
+					
+					<!--CONSEQUENCES: Surpassing building module supply (Loose a station build module)-->
+					<do_if value="([$build_modules_player.count,0].max) gt $supplied_build_modules_actual">
+						<set_value name="$ticker_message" operation="add" exact=" '\n' + {104710471,6070} "/>	
+						<set_value name="$logbook_message" operation="add" exact=" '\n' + {104710471,6070} "/>
+						<set_value name="$no_warning"  exact="1"/>
+						<destroy_object object="$build_modules_player.{1}" explosion="true"/>				
+					</do_if>
+					<!--CONSEQUENCES: Surpassing defence module supply (Loose a defence module)-->
+					<do_if value="([$defence_modules_player.count,0].max) gt $supplied_defence_modules_actual">
+						<set_value name="$ticker_message" operation="add" exact=" '\n' + {104710471,6080} "/>	
+						<set_value name="$logbook_message" operation="add" exact=" '\n' + {104710471,6080} "/>
+						<set_value name="$no_warning"  exact="1"/>
+						<destroy_object object="$defence_modules_player.{1}" explosion="true"/>				
+					</do_if>
+					
+					<do_if value="md.anghelos_sector_ruler_config.anghelos_config.$point_of_no_return == 0">
+						<do_if value="$TotalShipss gt $war_threshold_actual">
+							<set_value name="$ticker_message" operation="add" exact=" '\n' + {104710471,6010} "/>	
+							<set_value name="$logbook_message" operation="add" exact=" '\n' + {104710471,6010} "/>
+							<set_value name="$no_warning"  exact="1"/>
+							<!--CONSEQUENCES: Surpassing 180 military strength (Locked WAR with all major powers)-->
+							<set_faction_relation faction="faction.player" otherfaction="faction.argon" value="-0.32"/>
+							<set_faction_relation faction="faction.argon" otherfaction="faction.player" value="-0.32"/>
+									
+							<set_faction_relation faction="faction.player" otherfaction="faction.antigone" value="-0.32"/>
+							<set_faction_relation faction="faction.antigone" otherfaction="faction.player" value="-0.32"/>
+									
+							<set_faction_relation faction="faction.player" otherfaction="faction.terran" value="-0.32"/>
+							<set_faction_relation faction="faction.terran" otherfaction="faction.player" value="-0.32"/>
+									
+							<set_faction_relation faction="faction.player" otherfaction="faction.split" value="-0.32"/>
+							<set_faction_relation faction="faction.split" otherfaction="faction.player" value="-0.32"/>
+									
+							<set_faction_relation faction="faction.player" otherfaction="faction.freesplit" value="-0.32"/>
+							<set_faction_relation faction="faction.freesplit" otherfaction="faction.player" value="-0.32"/>
+									
+							<set_faction_relation faction="faction.player" otherfaction="faction.ministry" value="-0.32"/>
+							<set_faction_relation faction="faction.ministry" otherfaction="faction.player" value="-0.32"/>
+									
+							<set_faction_relation faction="faction.player" otherfaction="faction.teladi" value="-0.32"/>
+							<set_faction_relation faction="faction.teladi" otherfaction="faction.player" value="-0.32"/>
+									
+							<set_faction_relation faction="faction.player" otherfaction="faction.paranid" value="-0.32"/>
+							<set_faction_relation faction="faction.paranid" otherfaction="faction.player" value="-0.32"/>
+								
+							<set_faction_relation faction="faction.player" otherfaction="faction.holyorder" value="-0.32"/>
+							<set_faction_relation faction="faction.holyorder" otherfaction="faction.player" value="-0.32"/>
+									
+							<set_faction_relation faction="faction.player" otherfaction="faction.trinity" value="-0.32"/>
+							<set_faction_relation faction="faction.trinity" otherfaction="faction.player" value="-0.32"/>
+									
+							<set_faction_relation faction="faction.player" otherfaction="faction.boron" value="-0.32"/>
+							<set_faction_relation faction="faction.boron" otherfaction="faction.player" value="-0.32"/>
+									
+							<set_faction_relation_locked faction="faction.argon" locked="true"/>
+							<set_faction_relation_locked faction="faction.antigone" locked="true"/>
+							<set_faction_relation_locked faction="faction.terran" locked="true"/>
+							<set_faction_relation_locked faction="faction.split" locked="true"/>
+							<set_faction_relation_locked faction="faction.freesplit" locked="true"/>
+							<set_faction_relation_locked faction="faction.ministry" locked="true"/>
+							<set_faction_relation_locked faction="faction.teladi" locked="true"/>
+							<set_faction_relation_locked faction="faction.paranid" locked="true"/>
+							<set_faction_relation_locked faction="faction.holyorder" locked="true"/>
+							<set_faction_relation_locked faction="faction.trinity" locked="true"/>
+							<set_faction_relation_locked faction="faction.boron" locked="true"/>
+							
+							<set_value name="$logbook_message_mwar" exact="player.name + {104710471,7710} + (faction.player).name + {104710471,7720} "/>
+							<write_to_logbook title="{104710471,7700}" category="news" text="$logbook_message_mwar" highlighted="true" />
+						</do_if>
+						<do_else>
+							<set_faction_relation_locked faction="faction.argon" locked="false"/>
+							<set_faction_relation_locked faction="faction.antigone" locked="false"/>
+							<set_faction_relation_locked faction="faction.terran" locked="false"/>
+							<set_faction_relation_locked faction="faction.split" locked="false"/>
+							<set_faction_relation_locked faction="faction.freesplit" locked="false"/>
+							<set_faction_relation_locked faction="faction.ministry" locked="false"/>
+							<set_faction_relation_locked faction="faction.teladi" locked="false"/>
+							<set_faction_relation_locked faction="faction.paranid" locked="false"/>
+							<set_faction_relation_locked faction="faction.holyorder" locked="false"/>
+							<set_faction_relation_locked faction="faction.trinity" locked="false"/>
+							<set_faction_relation_locked faction="faction.boron" locked="false"/>
+							<set_faction_relation_locked faction="faction.boron" locked="false"/>
+						</do_else>
+					</do_if>
+					<do_else>
+							<set_value name="$ticker_message" operation="add" exact=" '\n' + {104710471,6000} "/>	
+							<set_value name="$logbook_message" operation="add" exact=" '\n' + {104710471,6000} "/>
+							<set_value name="$no_warning"  exact="1"/>
+							<!--CONSEQUENCES: Having more than 9 territoris will trigger a galaxy emergency against the player with all major factions allied and together at war with player. Irreversible-->
+							<set_faction_relation_locked faction="faction.argon" locked="false"/>
+							<set_faction_relation_locked faction="faction.antigone" locked="false"/>
+							<set_faction_relation_locked faction="faction.terran" locked="false"/>
+							<set_faction_relation_locked faction="faction.split" locked="false"/>
+							<set_faction_relation_locked faction="faction.freesplit" locked="false"/>
+							<set_faction_relation_locked faction="faction.ministry" locked="false"/>
+							<set_faction_relation_locked faction="faction.teladi" locked="false"/>
+							<set_faction_relation_locked faction="faction.paranid" locked="false"/>
+							<set_faction_relation_locked faction="faction.holyorder" locked="false"/>
+							<set_faction_relation_locked faction="faction.trinity" locked="false"/>
+							<set_faction_relation_locked faction="faction.boron" locked="false"/>
+							<set_faction_relation_locked faction="faction.boron" locked="false"/>
+							<set_faction_relation_locked faction="faction.xenon" locked="false"/>
+							
+							<set_faction_relation faction="faction.player" otherfaction="faction.argon" value="-1"/>
+							<set_faction_relation faction="faction.argon" otherfaction="faction.player" value="-1"/>								
+							<set_faction_relation faction="faction.player" otherfaction="faction.antigone" value="-1"/>
+							<set_faction_relation faction="faction.antigone" otherfaction="faction.player" value="-1"/>								
+							<set_faction_relation faction="faction.player" otherfaction="faction.terran" value="-1"/>
+							<set_faction_relation faction="faction.terran" otherfaction="faction.player" value="-1"/>								
+							<set_faction_relation faction="faction.player" otherfaction="faction.split" value="-1"/>
+							<set_faction_relation faction="faction.split" otherfaction="faction.player" value="-1"/>								
+							<set_faction_relation faction="faction.player" otherfaction="faction.freesplit" value="-1"/>
+							<set_faction_relation faction="faction.freesplit" otherfaction="faction.player" value="-1"/>								
+							<set_faction_relation faction="faction.player" otherfaction="faction.ministry" value="-1"/>
+							<set_faction_relation faction="faction.ministry" otherfaction="faction.player" value="-1"/>								
+							<set_faction_relation faction="faction.player" otherfaction="faction.teladi" value="-1"/>
+							<set_faction_relation faction="faction.teladi" otherfaction="faction.player" value="-1"/>								
+							<set_faction_relation faction="faction.player" otherfaction="faction.paranid" value="-1"/>
+							<set_faction_relation faction="faction.paranid" otherfaction="faction.player" value="-1"/>							
+							<set_faction_relation faction="faction.player" otherfaction="faction.holyorder" value="-1"/>
+							<set_faction_relation faction="faction.holyorder" otherfaction="faction.player" value="-1"/>								
+							<set_faction_relation faction="faction.player" otherfaction="faction.trinity" value="-1"/>
+							<set_faction_relation faction="faction.trinity" otherfaction="faction.player" value="-1"/>								
+							<set_faction_relation faction="faction.player" otherfaction="faction.boron" value="-1"/>
+							<set_faction_relation faction="faction.boron" otherfaction="faction.player" value="-1"/>
+							
+							<set_faction_relation faction="faction.xenon" otherfaction="faction.argon" value="1"/>
+							<set_faction_relation faction="faction.argon" otherfaction="faction.xenon" value="1"/>								
+							<set_faction_relation faction="faction.xenon" otherfaction="faction.antigone" value="1"/>
+							<set_faction_relation faction="faction.antigone" otherfaction="faction.xenon" value="1"/>								
+							<set_faction_relation faction="faction.xenon" otherfaction="faction.terran" value="1"/>
+							<set_faction_relation faction="faction.terran" otherfaction="faction.xenon" value="1"/>								
+							<set_faction_relation faction="faction.xenon" otherfaction="faction.split" value="1"/>
+							<set_faction_relation faction="faction.split" otherfaction="faction.xenon" value="1"/>								
+							<set_faction_relation faction="faction.xenon" otherfaction="faction.freesplit" value="1"/>
+							<set_faction_relation faction="faction.freesplit" otherfaction="faction.xenon" value="1"/>								
+							<set_faction_relation faction="faction.xenon" otherfaction="faction.ministry" value="1"/>
+							<set_faction_relation faction="faction.ministry" otherfaction="faction.xenon" value="1"/>								
+							<set_faction_relation faction="faction.xenon" otherfaction="faction.teladi" value="1"/>
+							<set_faction_relation faction="faction.teladi" otherfaction="faction.xenon" value="1"/>								
+							<set_faction_relation faction="faction.xenon" otherfaction="faction.paranid" value="1"/>
+							<set_faction_relation faction="faction.paranid" otherfaction="faction.xenon" value="1"/>							
+							<set_faction_relation faction="faction.xenon" otherfaction="faction.holyorder" value="1"/>
+							<set_faction_relation faction="faction.holyorder" otherfaction="faction.xenon" value="1"/>								
+							<set_faction_relation faction="faction.xenon" otherfaction="faction.trinity" value="1"/>
+							<set_faction_relation faction="faction.trinity" otherfaction="faction.xenon" value="1"/>								
+							<set_faction_relation faction="faction.xenon" otherfaction="faction.boron" value="1"/>
+							<set_faction_relation faction="faction.boron" otherfaction="faction.xenon" value="1"/>
+							
+							
+							<set_faction_relation faction="faction.boron" otherfaction="faction.argon" value="1"/>
+							<set_faction_relation faction="faction.argon" otherfaction="faction.boron" value="1"/>								
+							<set_faction_relation faction="faction.boron" otherfaction="faction.antigone" value="1"/>
+							<set_faction_relation faction="faction.antigone" otherfaction="faction.boron" value="1"/>								
+							<set_faction_relation faction="faction.boron" otherfaction="faction.terran" value="1"/>
+							<set_faction_relation faction="faction.terran" otherfaction="faction.boron" value="1"/>								
+							<set_faction_relation faction="faction.boron" otherfaction="faction.split" value="1"/>
+							<set_faction_relation faction="faction.split" otherfaction="faction.boron" value="1"/>								
+							<set_faction_relation faction="faction.boron" otherfaction="faction.freesplit" value="1"/>
+							<set_faction_relation faction="faction.freesplit" otherfaction="faction.boron" value="1"/>								
+							<set_faction_relation faction="faction.boron" otherfaction="faction.ministry" value="1"/>
+							<set_faction_relation faction="faction.ministry" otherfaction="faction.boron" value="1"/>								
+							<set_faction_relation faction="faction.boron" otherfaction="faction.teladi" value="1"/>
+							<set_faction_relation faction="faction.teladi" otherfaction="faction.boron" value="1"/>								
+							<set_faction_relation faction="faction.boron" otherfaction="faction.paranid" value="1"/>
+							<set_faction_relation faction="faction.paranid" otherfaction="faction.boron" value="1"/>							
+							<set_faction_relation faction="faction.boron" otherfaction="faction.holyorder" value="1"/>
+							<set_faction_relation faction="faction.holyorder" otherfaction="faction.boron" value="1"/>								
+							<set_faction_relation faction="faction.boron" otherfaction="faction.trinity" value="1"/>
+							<set_faction_relation faction="faction.trinity" otherfaction="faction.boron" value="1"/>
+
+							
+							<set_faction_relation faction="faction.argon" otherfaction="faction.antigone" value="1"/>
+							<set_faction_relation faction="faction.antigone" otherfaction="faction.argon" value="1"/>								
+							<set_faction_relation faction="faction.argon" otherfaction="faction.terran" value="1"/>
+							<set_faction_relation faction="faction.terran" otherfaction="faction.argon" value="1"/>								
+							<set_faction_relation faction="faction.argon" otherfaction="faction.split" value="1"/>
+							<set_faction_relation faction="faction.split" otherfaction="faction.argon" value="1"/>								
+							<set_faction_relation faction="faction.argon" otherfaction="faction.freesplit" value="1"/>
+							<set_faction_relation faction="faction.freesplit" otherfaction="faction.argon" value="1"/>								
+							<set_faction_relation faction="faction.argon" otherfaction="faction.ministry" value="1"/>
+							<set_faction_relation faction="faction.ministry" otherfaction="faction.argon" value="1"/>								
+							<set_faction_relation faction="faction.argon" otherfaction="faction.teladi" value="1"/>
+							<set_faction_relation faction="faction.teladi" otherfaction="faction.argon" value="1"/>								
+							<set_faction_relation faction="faction.argon" otherfaction="faction.paranid" value="1"/>
+							<set_faction_relation faction="faction.paranid" otherfaction="faction.argon" value="1"/>							
+							<set_faction_relation faction="faction.argon" otherfaction="faction.holyorder" value="1"/>
+							<set_faction_relation faction="faction.holyorder" otherfaction="faction.argon" value="1"/>								
+							<set_faction_relation faction="faction.argon" otherfaction="faction.trinity" value="1"/>
+							<set_faction_relation faction="faction.trinity" otherfaction="faction.argon" value="1"/>
+							
+															
+							<set_faction_relation faction="faction.antigone" otherfaction="faction.terran" value="1"/>
+							<set_faction_relation faction="faction.terran" otherfaction="faction.antigone" value="1"/>								
+							<set_faction_relation faction="faction.antigone" otherfaction="faction.split" value="1"/>
+							<set_faction_relation faction="faction.split" otherfaction="faction.antigone" value="1"/>								
+							<set_faction_relation faction="faction.antigone" otherfaction="faction.freesplit" value="1"/>
+							<set_faction_relation faction="faction.freesplit" otherfaction="faction.antigone" value="1"/>								
+							<set_faction_relation faction="faction.antigone" otherfaction="faction.ministry" value="1"/>
+							<set_faction_relation faction="faction.ministry" otherfaction="faction.antigone" value="1"/>								
+							<set_faction_relation faction="faction.antigone" otherfaction="faction.teladi" value="1"/>
+							<set_faction_relation faction="faction.teladi" otherfaction="faction.antigone" value="1"/>								
+							<set_faction_relation faction="faction.antigone" otherfaction="faction.paranid" value="1"/>
+							<set_faction_relation faction="faction.paranid" otherfaction="faction.antigone" value="1"/>							
+							<set_faction_relation faction="faction.antigone" otherfaction="faction.holyorder" value="1"/>
+							<set_faction_relation faction="faction.holyorder" otherfaction="faction.antigone" value="1"/>								
+							<set_faction_relation faction="faction.antigone" otherfaction="faction.trinity" value="1"/>
+							<set_faction_relation faction="faction.trinity" otherfaction="faction.antigone" value="1"/>
+							
+															
+							<set_faction_relation faction="faction.terran" otherfaction="faction.split" value="1"/>
+							<set_faction_relation faction="faction.split" otherfaction="faction.terran" value="1"/>								
+							<set_faction_relation faction="faction.terran" otherfaction="faction.freesplit" value="1"/>
+							<set_faction_relation faction="faction.freesplit" otherfaction="faction.terran" value="1"/>								
+							<set_faction_relation faction="faction.terran" otherfaction="faction.ministry" value="1"/>
+							<set_faction_relation faction="faction.ministry" otherfaction="faction.terran" value="1"/>								
+							<set_faction_relation faction="faction.terran" otherfaction="faction.teladi" value="1"/>
+							<set_faction_relation faction="faction.teladi" otherfaction="faction.terran" value="1"/>								
+							<set_faction_relation faction="faction.terran" otherfaction="faction.paranid" value="1"/>
+							<set_faction_relation faction="faction.paranid" otherfaction="faction.terran" value="1"/>							
+							<set_faction_relation faction="faction.terran" otherfaction="faction.holyorder" value="1"/>
+							<set_faction_relation faction="faction.holyorder" otherfaction="faction.terran" value="1"/>								
+							<set_faction_relation faction="faction.terran" otherfaction="faction.trinity" value="1"/>
+							<set_faction_relation faction="faction.trinity" otherfaction="faction.terran" value="1"/>
+							
+															
+							<set_faction_relation faction="faction.split" otherfaction="faction.freesplit" value="1"/>
+							<set_faction_relation faction="faction.freesplit" otherfaction="faction.split" value="1"/>								
+							<set_faction_relation faction="faction.split" otherfaction="faction.ministry" value="1"/>
+							<set_faction_relation faction="faction.ministry" otherfaction="faction.split" value="1"/>								
+							<set_faction_relation faction="faction.split" otherfaction="faction.teladi" value="1"/>
+							<set_faction_relation faction="faction.teladi" otherfaction="faction.split" value="1"/>								
+							<set_faction_relation faction="faction.split" otherfaction="faction.paranid" value="1"/>
+							<set_faction_relation faction="faction.paranid" otherfaction="faction.split" value="1"/>							
+							<set_faction_relation faction="faction.split" otherfaction="faction.holyorder" value="1"/>
+							<set_faction_relation faction="faction.holyorder" otherfaction="faction.split" value="1"/>								
+							<set_faction_relation faction="faction.split" otherfaction="faction.trinity" value="1"/>
+							<set_faction_relation faction="faction.trinity" otherfaction="faction.split" value="1"/>
+							
+							
+							<set_faction_relation faction="faction.freesplit" otherfaction="faction.ministry" value="1"/>
+							<set_faction_relation faction="faction.ministry" otherfaction="faction.freesplit" value="1"/>								
+							<set_faction_relation faction="faction.freesplit" otherfaction="faction.teladi" value="1"/>
+							<set_faction_relation faction="faction.teladi" otherfaction="faction.freesplit" value="1"/>								
+							<set_faction_relation faction="faction.freesplit" otherfaction="faction.paranid" value="1"/>
+							<set_faction_relation faction="faction.paranid" otherfaction="faction.freesplit" value="1"/>							
+							<set_faction_relation faction="faction.freesplit" otherfaction="faction.holyorder" value="1"/>
+							<set_faction_relation faction="faction.holyorder" otherfaction="faction.freesplit" value="1"/>								
+							<set_faction_relation faction="faction.freesplit" otherfaction="faction.trinity" value="1"/>
+							<set_faction_relation faction="faction.trinity" otherfaction="faction.freesplit" value="1"/>
+							
+															
+							<set_faction_relation faction="faction.ministry" otherfaction="faction.teladi" value="1"/>
+							<set_faction_relation faction="faction.teladi" otherfaction="faction.ministry" value="1"/>								
+							<set_faction_relation faction="faction.ministry" otherfaction="faction.paranid" value="1"/>
+							<set_faction_relation faction="faction.paranid" otherfaction="faction.ministry" value="1"/>							
+							<set_faction_relation faction="faction.ministry" otherfaction="faction.holyorder" value="1"/>
+							<set_faction_relation faction="faction.holyorder" otherfaction="faction.ministry" value="1"/>								
+							<set_faction_relation faction="faction.ministry" otherfaction="faction.trinity" value="1"/>
+							<set_faction_relation faction="faction.trinity" otherfaction="faction.ministry" value="1"/>
+							
+															
+							<set_faction_relation faction="faction.teladi" otherfaction="faction.paranid" value="1"/>
+							<set_faction_relation faction="faction.paranid" otherfaction="faction.teladi" value="1"/>							
+							<set_faction_relation faction="faction.teladi" otherfaction="faction.holyorder" value="1"/>
+							<set_faction_relation faction="faction.holyorder" otherfaction="faction.teladi" value="1"/>								
+							<set_faction_relation faction="faction.teladi" otherfaction="faction.trinity" value="1"/>
+							<set_faction_relation faction="faction.trinity" otherfaction="faction.teladi" value="1"/>
+							
+												
+							<set_faction_relation faction="faction.paranid" otherfaction="faction.holyorder" value="1"/>
+							<set_faction_relation faction="faction.holyorder" otherfaction="faction.paranid" value="1"/>								
+							<set_faction_relation faction="faction.paranid" otherfaction="faction.trinity" value="1"/>
+							<set_faction_relation faction="faction.trinity" otherfaction="faction.paranid" value="1"/>
+							
+														
+							<set_faction_relation faction="faction.holyorder" otherfaction="faction.trinity" value="1"/>
+							<set_faction_relation faction="faction.trinity" otherfaction="faction.holyorder" value="1"/>
+							
+							
+							<set_faction_relation_locked faction="faction.argon" locked="true"/>
+							<set_faction_relation_locked faction="faction.antigone" locked="true"/>
+							<set_faction_relation_locked faction="faction.terran" locked="true"/>
+							<set_faction_relation_locked faction="faction.split" locked="true"/>
+							<set_faction_relation_locked faction="faction.freesplit" locked="true"/>
+							<set_faction_relation_locked faction="faction.ministry" locked="true"/>
+							<set_faction_relation_locked faction="faction.teladi" locked="true"/>
+							<set_faction_relation_locked faction="faction.paranid" locked="true"/>
+							<set_faction_relation_locked faction="faction.holyorder" locked="true"/>
+							<set_faction_relation_locked faction="faction.trinity" locked="true"/>
+							<set_faction_relation_locked faction="faction.boron" locked="true"/>
+							<set_faction_relation_locked faction="faction.xenon" locked="true"/>
+							
+							<do_if value="md.anghelos_sector_ruler_config.anghelos_config.$point_of_no_return_spawn == 0">
+								<set_value name="md.anghelos_sector_ruler_config.anghelos_config.$point_of_no_return_spawn" exact="1"/>
+								<set_value name="$logbook_message_swar" exact="player.name + {104710471,7710} + (faction.player).name + {104710471,7730} "/>
+								<write_to_logbook title="{104710471,7700}" category="news" text="$logbook_message_swar" highlighted="true" />
+							</do_if>
+					</do_else>
+					
+					
+					<!--Money + Info Output-->
+					<do_if value="$no_warning== 0">	
+						<set_value name="$ticker_message" operation="add" exact=" '\n' + {104710471,1060} "/>	
+						<set_value name="$logbook_message" operation="add" exact=" '\n' + {104710471,1060} "/>
+					</do_if>
+					<show_notification text="$ticker_message" timeout="15s"/>
+					<write_to_logbook title="{104710471,2000}" category="upkeep" text="$logbook_message" money="($sector_tax_total + $workforce_tax_total + $workforce_tax__welfare_total)"/>
+					<reward_player money="($sector_tax_total + $workforce_tax_total + $workforce_tax__welfare_total)"/>
+
+				
+				
+					<!--Cleanup-->
+					<remove_value name="$sectors_player"/>
+					<remove_value name="$sector_tax_total"/>
+					<remove_value name="$workforce_tax_total"/>
+					<remove_value name="$workforce_total"/>
+					<remove_value name="$workforce_welfare_total"/>
+					<remove_value name="$workforce_tax__welfare_total"/>
+					<remove_value name="$sector"/>
+					<remove_value name="$stations_player"/>
+					<remove_value name="$stations_player_all"/>
+					<remove_value name="$stations"/>
+					<remove_value name="$stations_all"/>
+					<remove_value name="$build_modules_player"/>
+					<remove_value name="$defence_modules_player"/>
+					<remove_value name="$stations_all_build_modules"/>
+					<remove_value name="$stations_all_defence_modules"/>
+					<remove_value name="$no_warning"/>
+					
+					<remove_value name="$XLShipss"/>
+					<remove_value name="$XLDockedShipss"/>
+					<remove_value name="$LShipss"/>
+					<remove_value name="$LDockedShipss"/>
+					<remove_value name="$MShipss"/>
+					<remove_value name="$MDockedShipss"/>
+					<remove_value name="$SShipss"/>
+					<remove_value name="$SDockedShipss"/>
+					<remove_value name="$TotalShipss"/>
+					
+					<remove_value name="$TraderLShipss"/>
+					<remove_value name="$TraderLDockedShipss"/>
+					<remove_value name="$TraderMShipss"/>
+					<remove_value name="$TraderMDockedShipss"/>
+					<remove_value name="$TraderSShipss"/>
+					<remove_value name="$TraderSDockedShipss"/>
+					<remove_value name="$TraderTotalShipss"/>
+					
+					<remove_value name="$MinerLShipss"/>
+					<remove_value name="$MinerLDockedShipss"/>
+					<remove_value name="$MinerMShipss"/>
+					<remove_value name="$MinerMDockedShipss"/>
+					<remove_value name="$MinerSShipss"/>
+					<remove_value name="$MinerSDockedShipss"/>
+					<remove_value name="$MinerTotalShipss"/>
+					
+					<remove_value name="$ScavengerMShipss"/>
+					<remove_value name="$ScavengerMDockedShipss"/>
+					
+					<remove_value name="$BuilderXLShipss"/>
+					<remove_value name="$BuilderXLDockedShipss"/>
+					<remove_value name="$BuilderLShipss"/>
+					<remove_value name="$BuilderLDockedShipss"/>
+					<remove_value name="$BuilderTotalShipss"/>
+					
+					<remove_value name="$supplied_military_actual"/>
+					<remove_value name="$supplied_miners_actual"/>
+					<remove_value name="$supplied_traders_actual"/>
+					<remove_value name="$supplied_scavengers_actual"/>
+					<remove_value name="$supplied_builders_actual"/>
+					<remove_value name="$supplied_defence_modules_actual"/>
+					<remove_value name="$supplied_build_modules_actual"/>
+				
+					<remove_value name="$ticker_message"/>	
+					
+				</actions>
+			</cue>    
+		</cues>
+	</cue>
+</cues>
+</mdscript>

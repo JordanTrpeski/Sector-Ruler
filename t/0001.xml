@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<language>
+	<page id="104710471" voice="no">	
+		
+		<!--General and notification-->
+		<t id="1000">Anghelos92: Sector Ruler</t>
+		<t id="1010">Total Government Income: </t>
+		<t id="1020">Check Logbook upkeep for detailed info.</t>	
+		<t id="1030">Info Panel</t>	
+		<t id="1040">Settings</t>	
+		<t id="1050">Quick Guide</t>
+		<t id="1060">No Warnings</t>
+		<t id="1070">Sector Ruler WARNING:</t>
+		
+		<!--Logbook-->
+		<t id="2000">Sector Ruler Report</t>
+		<t id="2010">Sectors Owned: </t>
+		<t id="2020">Population: </t>
+		<t id="2030">Sectors Income: </t>
+		<t id="2040">Population Income: </t>
+		<t id="2050">MILITARY SUPPLIES: </t>
+		<t id="2051">/</t>
+		<t id="2052">-XL: </t>
+		<t id="2053">-L: </t>
+		<t id="2054">-M: </t>
+		<t id="2055">-S: </t>
+		<t id="2060">MINING SUPPLIES: </t>
+		<t id="2070">TRADING SUPPLIES: </t>
+		<t id="2080">SUPPLIED SCAVENGERS SHIPS: </t>
+		<t id="2090">SUPPLIED UTILITY SHIPS: </t>
+		<t id="2091">-Builders/auxilliary XL: </t>
+		<t id="2092">-Teuta L: </t>
+		<t id="2100">SUPPLIED WARFS AND SHIPYARDS MODULES: </t>
+		<t id="2200">SUPPLIED DEFENCE MODULES: </t>
+		<t id="2300">Welfared population: </t>
+		<t id="2400">Welfared population Income: </t>
+		<t id="2500">-----War Threshold: </t>
+		
+		<!--MENU-->
+		<t id="3000">Interval check</t>
+		<t id="3001">Notification warning:</t>
+		<t id="3010">Income from each owned sector</t>
+		<t id="3020">Income from each worforce in owned stations in owned sectors</t>
+		<t id="3030">Military strength war threshold</t>
+		<t id="3040">Owned sectors threshold that triggers crysis</t>
+		<t id="3050">Military supply from each owned sector</t>
+		<t id="3060">Miners supply from each owned sector</t>
+		<t id="3070">Traders supply from each owned sector</t>
+		<t id="3080">Scavengers supply from each owned sector</t>
+		<t id="3090">Utility supply from each owned sector</t>
+		<t id="3011">Building modules supply from each owned sector</t>
+		<t id="3012">Defence modules supply from each owned sector</t>
+		<t id="3013">Military supply at start</t>
+		<t id="3014">Miners supply at start</t>
+		<t id="3015">Traders supply at start</t>
+		<t id="3016">Scavengers supply at start</t>
+		<t id="3017">Utility (building, auxilliary ships and Teuta) supply at start</t>
+		<t id="3018">Building modules supply at start</t>
+		<t id="3019">Defence modules supply at start</t>
+		<t id="3100">Income from each worforce in all owned station that has a welfare module</t>
+		
+		<!--Option Mouse Over-->
+		<t id="4000">XL ships uses 21 SUPPLIES</t>
+		<t id="4010">L ships uses 9 SUPPLIES</t>
+		<t id="4020">M ships uses 3 SUPPLIES</t>
+		<t id="4030">S ships uses 1 SUPPLIES</t>
+		<t id="4040">Scavengers are the manticore ships, each one uses 1 SUPPLIES</t>
+		<t id="4050">Utilities ships are builders, auxilliary and Teutas, each one uses 1 SUPPLIES</t>
+		<t id="4060">Build modules are S M L and XL fabrication and equipment bays, each one uses 1 SUPPLIES</t>
+		<t id="4070">Defence modules are defence rings and bridges but also administrative centers. Each one uses 1 SUPPLIES</t>
+		<t id="4080">Exceeding this military supply will make all major powers declare war on you. REVERSIBLE.</t>
+		<t id="4090">Owning more than this number of sectors will make all major powers ally, includinìg Xenon, while all declaring war on you. IRREVERSIBLE.</t>
+		<t id="4100">XL ships: 21 SUPPLIES, L ships: 9 SUPPLIES, M ships: 3 SUPPLIES, S ships: 1 supplies</t>
+		<t id="4200">L ships: 9 SUPPLIES, M ships: 3 SUPPLIES, S ships: 1 supplies</t>
+		<t id="4300">Start supply is free supply provided even without owning a sector</t>
+		<t id="4400">Every this minutes the game will check your supplies, give you sector income and apply consequences if any.</t>
+		<t id="4500">Station must have at least one welfare module among gambling den, casino or boron art gallery. Station is not required to be in owned sector and it is added on top of normal population income if in owned sector.</t>
+		<t id="4600">Show a notification warning in red each minute if you have exceeded any supply or limit.</t>
+		
+		<!--INFO PANEL-->
+		<t id="5000">SETTINGS</t>
+		<t id="5010">INFO PANEL</t>
+		<t id="5020">WARNINGS: </t>
+		<t id="7000">Crysis may be triggered!</t>
+		<t id="7010">Military threat War!</t>
+		<t id="7020">Military supply exceeded: random military ship may be destroyed.</t>
+		<t id="7030">Miners supply exceeded: random miner ship may be destroyed.</t>
+		<t id="7040">Traders supply exceeded: random trader ship may be destroyed.</t>
+		<t id="7050">Utility supply exceeded: random utility ship may be destroyed.</t>
+		<t id="7060">Scavenger supply exceeded: random scavenger ship may be destroyed.</t>
+		<t id="7070">Build module supply exceeded: random build module may be destroyed.</t>
+		<t id="7080">Defence module supply exceeded: random defence module may be destroyed.</t>
+		
+		<t id="7700">BREAKING NEWS:</t>
+		<t id="7710">, guiding the </t>
+		<t id="7720">, continue military rise is the new situation that high commands among the gate network have to face. We will not stand and watch this new threat grow unchecked is the most common comment among fleet officials. </t>
+		<t id="7730">, galactic expansion can no more be ignored. The balance of power is rapidly shifting and this struck fear in the defence analysts in all the gate network. Even the Xenon changed their usual patterns in recognition of this threat. Is this the beginning of a new galactic grand coalition? /nWhat we know for sure that war is inevitable. </t>
+		
+		
+		<!--Warnings actual-->
+		<t id="6000">CRYSIS triggered!</t>
+		<t id="6010">THREAT WAR triggered!</t>
+		<t id="6020">MILITARY supply exceeded: random military ship(s) destroyed.</t>
+		<t id="6030">MINERS supply exceeded: random miner ship(s) destroyed.</t>
+		<t id="6040">TRADERS supply exceeded: random trader ship(s) destroyed.</t>
+		<t id="6050">UTILITY supply exceeded: random utility ship destroyed.</t>
+		<t id="6060">SCAVENGERS supply exceeded: random scavenger ship destroyed.</t>
+		<t id="6070">BUILD module supply exceeded: random build module destroyed.</t>
+		<t id="6080">DEFENCE module supply exceeded: random defence module destroyed.</t>
+		
+		<!--GUIDE-->
+		<t id="8000">SUPPLY</t>
+		<t id="8001">-At the start of the game you have a limited number of military, mining, trading, builder, auxilliary and scavenging</t>
+		<t id="80011">ships you can build, along with limited station defence and equipping and fabrication bays.</t>
+		<t id="8002">-Each category of ship or the previously mentioned station modules has its own supply amount, exceeding the relative</t>
+		<t id="80022">supply will result in a random owned object in that category being destroyed.</t>
+		<t id="8006">-Categories, that includes bigger ships along with smaller ships, will have larger ships prioritized for the</t>
+		<t id="80066">destruction if you exceed the supply amount.</t>
+		<t id="8003">-Note that the destruction of a station module will not cancel them from the build plan of the station, resulting</t>
+		<t id="80033">in the station trying to rebuild it, if they have the resources and the money.</t>
+		<t id="8004">-There is a threshold of military supply that if exceeded will result in all major powers declaring war on you,</t>
+		<t id="80044">locking the relation.</t>
+		<t id="8005">-If you return under that threshold after they have been declared war on you, relation will not be locked,</t>
+		<t id="80055">so reputation can be restored. DynamicWars mod can help you restoring relations.</t>
+		<t id="8010">SECTOR OWNERSHIP</t>
+		<t id="8011">-For each sector owned you can increase the maximum amount of supplies at your disposal</t>
+		<t id="8012">-Owning sectors also grants a passive income, due to land and mining rights.</t>
+		<t id="8013">-Stations you own in owned sectors can produce income from their populations.</t>
+		<t id="8014">-Owning more than the sector threshold will trigger a galaxy wide crysis where all major powers will be allied</t>
+		<t id="80144">among them and at war against you.</t>
+		<t id="8020">WELFARE MODULES</t>
+		<t id="8021">-In vanilla, welfare modules include the casino, the gambling den and the boron art gallery.</t>
+		<t id="8022">-Having a welfare module in a station, even in not owned sectors, will produce income based on the amount of</t>
+		<t id="80222">workforce on the station.</t>
+		<t id="8023">-Multiple welfare modules do not increase this income, so only one module of your choice per station is required</t>
+		<t id="80233">for this income to be active.</t>
+		<t id="8030">NOTES</t>
+		<t id="8031">-Be careful approaching your current max supply in a category, sometimes the game gives you free ships that will</t>
+		<t id="80311">be counted for the supply check.</t>
+		<t id="8032">-Non vanilla ships with exotic categories, like XL mining ships or traders, non M scavenger, non L dismantlers or</t>
+		<t id="80322">non XL builders and auxilliary will not be included in this mod statistics and systems.</t>
+	
+		<!--FLEETS-->
+		<t id="9000">Strike Group Interceptors</t>
+		<t id="9010">Strike Group Supply</t>
+		<t id="9020">Strike Group Destroyers</t>
+		<t id="9030">Strike Group Defence</t>
+		<t id="9040">Strike Group Asgard</t>
+		
+		<t id="9070">Strike Group Carrier</t>
+		<t id="9080">Strike Group Flagship</t>
+		
+		<t id="9100">Federation II Fleet</t>
+		<t id="9150">Republican Guard</t>
+		<t id="9200">Inquisition Fleet</t>
+		<t id="9250">Reformation Fleet</t>
+		<t id="9280">Golden Armada</t>
+		<t id="9300">Oppression Fleet</t>
+		<t id="9350">Enslaver Fleet</t>
+		<t id="9400">Company Fleet</t>
+		<t id="9450">Punisher Fleet</t>
+		<t id="9500">Retribution Fleet</t>
+		<t id="9600">Expeditionary Fleet</t>
+		<t id="9650">Mining Company</t>
+		<t id="9700">Eraser Fleet</t>
+		<t id="9710">Core silicon provider</t>
+		<t id="9720">Core ore provider</t>
+		<t id="9730">Core energy supplier</t>
+	</page>
+</language>

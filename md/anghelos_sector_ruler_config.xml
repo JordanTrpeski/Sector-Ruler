@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<mdscript name="anghelos_sector_ruler_config"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="md.xsd">
+  <cues>
+    <cue name="anghelos_config" namespace="this" version="1">
+		<conditions>
+			<check_any>
+			  <event_game_loaded/>
+			  <event_cue_signalled cue="md.Setup.GameStart"/>
+			</check_any>
+		</conditions>
+		<actions>
+			<!--LATE GAME CRYSIS: Final conquest do not modify-->
+			<do_if value="not $point_of_no_return?">
+				<set_value name="$point_of_no_return" exact="0"/>
+			</do_if>
+			<do_if value="not $point_of_no_return_spawn?">
+				<set_value name="$point_of_no_return_spawn" exact="0"/>
+			</do_if>
+			<!--Run Interval-->
+			<do_if value="not $anghelos_interval?">
+				<set_value name="$anghelos_interval" exact="15"/>
+			</do_if>
+			<!--Run Interval-->
+			<do_if value="not $anghelos_do_notification?">
+				<set_value name="$anghelos_do_notification" exact="1"/>
+			</do_if>
+			<!--Sector Income-->
+			<do_if value="not $anghelos_sector_income?">
+				<set_value name="$anghelos_sector_income" exact="1000000.0"/>
+			</do_if>
+			<!--workforce Income-->
+			<do_if value="not $anghelos_workforce_income?">
+				<set_value name="$anghelos_workforce_income" exact="70.0"/>
+			</do_if>
+			<!--workforce welfare Income-->
+			<do_if value="not $anghelos_workforce_welfare_income?">
+				<set_value name="$anghelos_workforce_welfare_income" exact="30.0"/>
+			</do_if>
+			<!--war threshold-->
+			<do_if value="not $anghelos_war_strength?">
+				<set_value name="$anghelos_war_strength" exact="189.0"/>
+			</do_if>
+			<!--crysis threshold-->
+			<do_if value="not $anghelos_crysis?">
+				<set_value name="$anghelos_crysis" exact="9"/>
+			</do_if>
+			<!--sector supply military-->
+			<do_if value="not $anghelos_supplied_military?">
+				<set_value name="$anghelos_supplied_military" exact="63.0"/>
+			</do_if>
+			<!--sector supply miners-->
+			<do_if value="not $anghelos_supplied_miners?">
+				<set_value name="$anghelos_supplied_miners" exact="45.0"/>
+			</do_if>
+			<!--sector supply traders-->
+			<do_if value="not $anghelos_supplied_traders?">
+				<set_value name="$anghelos_supplied_traders" exact="27.0"/>
+			</do_if>
+			<!--sector supply scavengers-->
+			<do_if value="not $anghelos_supplied_scavengers?">
+				<set_value name="$anghelos_supplied_scavengers" exact="6.0"/>
+			</do_if>
+			<!--sector supply utility (building, auxilliary ships and Teuta)-->
+			<do_if value="not $anghelos_supplied_utility?">
+				<set_value name="$anghelos_supplied_utility" exact="2.0"/>
+			</do_if>
+			<!--sector supply building modules-->
+			<do_if value="not $anghelos_supplied_building?">
+				<set_value name="$anghelos_supplied_building" exact="2.0"/>
+			</do_if>
+			<!--sector supply defence modules-->
+			<do_if value="not $anghelos_supplied_defence?">
+				<set_value name="$anghelos_supplied_defence" exact="5.0"/>
+			</do_if>
+			
+			<!--start supply military-->
+			<do_if value="not $anghelos_supplied_militaryS?">
+				<set_value name="$anghelos_supplied_militaryS" exact="189.0"/>
+			</do_if>
+			<!--start supply miners-->
+			<do_if value="not $anghelos_supplied_minersS?">
+				<set_value name="$anghelos_supplied_minersS" exact="135.0"/>
+			</do_if>
+			<!--start supply traders-->
+			<do_if value="not $anghelos_supplied_tradersS?">
+				<set_value name="$anghelos_supplied_tradersS" exact="81.0"/>
+			</do_if>
+			<!--start supply scavengers-->
+			<do_if value="not $anghelos_supplied_scavengersS?">
+				<set_value name="$anghelos_supplied_scavengersS" exact="18.0"/>
+			</do_if>
+			<!--start supply utility (building, auxilliary ships and Teuta)-->
+			<do_if value="not $anghelos_supplied_utilityS?">
+				<set_value name="$anghelos_supplied_utilityS" exact="2.0"/>
+			</do_if>
+			<!--start supply building modules-->
+			<do_if value="not $anghelos_supplied_buildingS?">
+				<set_value name="$anghelos_supplied_buildingS" exact="0.0"/>
+			</do_if>
+			<!--start supply defence modules-->
+			<do_if value="not $anghelos_supplied_defenceS?">
+				<set_value name="$anghelos_supplied_defenceS" exact="5.0"/>
+			</do_if>
+		</actions>
+    </cue>
+  </cues>
+</mdscript>
